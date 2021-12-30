@@ -27,5 +27,8 @@
   },
   "bugs": {
     "url": "https://github.com/heiyehk/heiye/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
