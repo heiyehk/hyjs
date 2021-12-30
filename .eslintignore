@@ -1,0 +1,9 @@
+node_modules
+dist
+rollup.config.js
+packages/**/dist/
+packages/**/*.d.ts
+*.d.ts
+/**/*.d.ts
+es
+lib
