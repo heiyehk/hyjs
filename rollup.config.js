@@ -1,10 +1,10 @@
 import fs from 'fs-extra';
 import path from 'path';
-import commonjs from 'rollup-plugin-commonjs';
+import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
-// import { terser } from 'rollup-plugin-terser';
+import { terser } from 'rollup-plugin-terser';
 import replace from '@rollup/plugin-replace';
-import { babel } from '@rollup/plugin-babel';
+// import { babel } from '@rollup/plugin-babel';
 
 const packages = fs.readdirSync(path.resolve(__dirname, 'packages'));
 const production = !process.env.ROLLUP_WATCH;
@@ -12,7 +12,7 @@ const umd = process.env.UMD;
 
 const configs = packages.map(key => {
   const pkg = fs.readJsonSync(`./packages/${key}/package.json`);
-  const umdName = 'heiye';
+  const umdName = 'hyjs';
 
   if (pkg.private) return [];
 
@@ -28,8 +28,7 @@ const configs = packages.map(key => {
       replace({
         preventAssignment: true,
         'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development')
-      }),
-      // terser()
+      })
     ],
     onwarn: function (warning) {
       if (warning.code === 'THIS_IS_UNDEFINED') {
@@ -76,7 +75,8 @@ const configs = packages.map(key => {
       },
       {
         ...umdOutputOption,
-        file: path.resolve('packages', key, 'dist/index.min.js')
+        file: path.resolve('packages', key, 'dist/index.min.js'),
+        plugins: [terser()]
       }
     ],
     external: Object.keys(pkg.peerDependencies || {})
@@ -93,15 +93,16 @@ const configs = packages.map(key => {
       },
       {
         ...umdOutputOption,
-        file: path.resolve('packages', key, 'dist/index.es5.min.js')
+        file: path.resolve('packages', key, 'dist/index.es5.min.js'),
+        plugins: [terser()]
       }
     ],
     plugins: [
       ...common.plugins,
-      babel({
-        babelHelpers: 'runtime',
-        extensions: ['.js'],
-      })
+      // babel({
+      //   babelHelpers: 'runtime',
+      //   extensions: ['.js'],
+      // })
     ]
   };
 
