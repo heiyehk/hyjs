@@ -22,7 +22,7 @@
 
 `getAccessType` 类型获取
 
-`filterParamsEmpty` 过滤不需要的内容
+`filterParamsEmpty` 过滤对象内容，如`null`、`undefined`等
 
 `getVideoDuration` 获取视频时长
 
