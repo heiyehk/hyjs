@@ -182,7 +182,7 @@ export const getAccessType = (access: any): AccessType => {
 };
 
 /**
- * 过滤不需要的内容
+ * 过滤对象内容，如`null`、`undefined`等
  * @param data 数据
  * @param validation 过滤值
  */

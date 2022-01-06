@@ -218,7 +218,7 @@ export var getAccessType = function (access) {
     return Object.prototype.toString.call(access).slice(8, -1);
 };
 /**
- * 过滤不需要的内容
+ * 过滤对象内容，如`null`、`undefined`等
  * @param data 数据
  * @param validation 过滤值
  */
