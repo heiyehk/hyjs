@@ -1,6 +1,6 @@
 {
   "name": "@hyjs/utils",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "在JavaScript/Node.js中的一些常用工具函数",
   "author": "heiyehk <heiyehk@foxmail.com>",
   "homepage": "https://github.com/heiyehk/hyjs#readme",
@@ -10,7 +10,12 @@
   "unpkg": "dist/index.min.js",
   "jsdelivr": "dist/index.min.js",
   "types": "lib/index.d.ts",
-  "keywords": ["hyjs", "utils", "tools", "lodash"],
+  "keywords": [
+    "hyjs",
+    "utils",
+    "tools",
+    "lodash"
+  ],
   "directories": {
     "lib": "lib",
     "test": "__tests__"
