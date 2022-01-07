@@ -1,6 +1,6 @@
 {
   "name": "@hyjs/utils",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "在JavaScript/Node.js中的一些常用工具函数",
   "author": "heiyehk <heiyehk@foxmail.com>",
   "homepage": "https://github.com/heiyehk/hyjs#readme",
