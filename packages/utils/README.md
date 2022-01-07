@@ -4,42 +4,152 @@
 
 ## 使用
 
-`debounce` 防抖函数
+### getDevice 获取当前设备
+``` ts
+getDevice();
+// "iOS" | "Android" | "Web"
+```
+### ieIE 是否IE
+``` ts
+isIE();
+// boolean
+```
+### isPC 是否PC端
+``` ts
+isPC();
+// boolean
+```
+### compressImage 压缩图片
+``` ts
+await compressImage(file);
+// Promise<Blob>
 
-`throttle` 节流函数
+await compressImage(file);
+// Promise<Blob>
+```
+### downloadFile 下载流文件
+> 注意：在请求时需要设置 `headers` 头 `responseType: blob` 
+``` ts
+downloadFile(data, 'image/jpeg', 'filename');
+// filename.jpeg
+```
+### convertBase64ToFile Base64转File或Blob
+``` ts
+await convertBase64ToFile(base64, 'file', 'filename');
+// Promise<File>
 
-`randomCode` 生成随机4位数code
+await convertBase64ToFile(base64, 'blob', 'filename');
+// Promise<Blob>
+```
+### fileToBase64 File转Base64
+``` ts
+await fileToBase64(file);
+// Promise<string>
+```
+### getAudioDuration 获取视频/音频时长
+``` ts
+await getAudioDuration(file);
+// 12s
+```
+### getAccessType 获取类型函数
+``` ts
+getAccessType({});
+// Object
 
-`uuid` 生成uuid
+getAccessType(new RegExp());
+// RegExp
 
-`fileReaderToBase64` file转化base64
+getAccessType(Symbol());
+// Symbol
 
-`convertBase64UrlToBlob` base64转文件格式
+...
+```
+### sleep 休眠函数
+``` ts
+async function() {
+  await sleep(3000);
+  // 3s ----
+  console.log('log');
+}
+```
+### debounce 防抖函数
+``` ts
+// debounce(() => {}, 毫秒);
+debounce(() => {}, 2000);
+```
+### throttle 节流函数
+``` ts
+// throttle(() => {}, 毫秒);
+throttle(() => {}, 2000);
+```
+### convertCurrency 数字转大写金额
+``` ts
+convertCurrency(987654321);
+// 玖亿捌仟柒佰陆拾伍万肆仟叁佰贰拾壹元整
+```
+### numberToChinese 数字转大写数字
+``` ts
+numberToChinese(987654321);
+// 九億八仟七百六十五萬四仟三百二十一
+```
+### filterObjectEmpty 过滤对象指定内容
+``` ts
+filterObjectEmpty({
+  a: undefined,
+  b: null,
+  c: '',
+  d: 0
+});
+// { d: 0 }
 
-`downloadFile` 流文件下载
+filterObjectEmpty({
+  a: undefined,
+  b: 111,
+  c: 222
+}, [111, 222]);
+// { a: undefined }
+```
+### random4Code 生成4位code
+``` ts
+random4Code();
+// dsj1
+```
+### randomNumber 生成数字
+``` ts
+randomNumber(100);
+// 32
 
-`compressImage` 图片压缩
+randomNumber(1, 3);
+// 2
+```
+### toHump 下划线转驼峰
+``` ts
+toHump('a_bc_d_e');
+// aBcDE
+```
+### toLine 驼峰转下划线
+``` ts
+toLine('aBcDE');
+// a_bc_d_e
+```
+### uuid 生成uuid
+``` ts
+uuid();
+// 15afbbae-a98b-b07c-df94-e2f916ac1cd1
+```
 
-`getAccessType` 类型获取
+### RegExp+Name 正则校验
+使用[anyRule](https://any86.github.io/any-rule/)
 
-`filterParamsEmpty` 过滤对象内容，如`null`、`undefined`等
+`Strict` 严谨的
+ 
+`Loose` 宽松的
 
-`getVideoDuration` 获取视频时长
-
-`toHump` 下划线转驼峰
-
-`toLine` 驼峰转换下划线
-
-`sleep` 休眠
-
-`ieIE` 是否是IE
-
-`isPC` 是否是pc端
-
-`getDevice` 获取当前设备
-
-`randomNumber` 随机数字
-
-`numberToChinese` 阿拉伯数字翻译成中文的大写数字
-
-`convertCurrency` 数字转大写金额
+``` ts
+// RegExpIMEI 手机机身码(IMEI)
+RegExpIMEI.test('123456789012345');
+// RegExpURL 网址(URL)
+RegExpURL.test('www.npmjs.com');
+RegExpURL.test('https://www.npmjs.com');
+...
+```
