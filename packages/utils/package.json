@@ -1,6 +1,6 @@
 {
   "name": "@hyjs/utils",
-  "version": "0.1.1",
+  "version": "0.0.5",
   "description": "在JavaScript/Node.js中的一些常用工具函数",
   "author": "heiyehk <heiyehk@foxmail.com>",
   "homepage": "https://github.com/heiyehk/hyjs#readme",
@@ -38,5 +38,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "5b34d38f221eebf55f17a969c594f1addf1d4dd8"
+  "gitHead": "6183ec5769fe09562acc49414d935d36ca94e4ab"
 }
