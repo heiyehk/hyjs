@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0](https://github.com/heiyehk/hyjs/compare/v0.1.1...v0.2.0) (2022-01-11)
+
+
+### Features
+
+* 千分位分隔符 ([96af711](https://github.com/heiyehk/hyjs/commit/96af7114344428b53013a023c4c8309b4ab805a9))
+
+
+
+
+
 ## [0.1.1](https://github.com/heiyehk/hyjs/compare/v0.1.0...v0.1.1) (2022-01-07)
 
 **Note:** Version bump only for package @hyjs/utils
