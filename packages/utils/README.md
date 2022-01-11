@@ -4,6 +4,18 @@
 
 ## 使用
 
+``` sh
+npm i @hyjs/utils -S
+
+#or yarn
+
+yarn add @hyjs/utils -S
+
+#or pnpm
+
+pnpm i @hyjs/utils -S
+```
+
 ### getDevice 获取当前设备
 ``` ts
 getDevice();
@@ -21,9 +33,6 @@ isPC();
 ```
 ### compressImage 压缩图片
 ``` ts
-await compressImage(file);
-// Promise<Blob>
-
 await compressImage(file);
 // Promise<Blob>
 ```
@@ -161,15 +170,15 @@ uuid();
 ```
 
 ### RegExp+Name 正则校验
-使用[anyRule](https://any86.github.io/any-rule/)
+使用[anyRule](https://any86.github.io/any-rule/)  
 
-`Strict` 严谨的
- 
-`Loose` 宽松的
+- `Strict` 严谨的
+- `Loose` 宽松的
 
 ``` ts
 // RegExpIMEI 手机机身码(IMEI)
 RegExpIMEI.test('123456789012345');
+
 // RegExpURL 网址(URL)
 RegExpURL.test('www.npmjs.com');
 RegExpURL.test('https://www.npmjs.com');
