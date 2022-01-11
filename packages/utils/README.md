@@ -114,6 +114,17 @@ filterObjectEmpty({
 random4Code();
 // dsj1
 ```
+### randomChar 生成指定长度的字符，可选择`number`(数字), `lowercase`(小写字母), `capital`(大写字母)
+``` ts
+randomChar();
+// zZqt
+
+randomChar(32);
+// w2rAOdMRqhlhNEYzVUv2zw0Zp616rNFp
+
+randomChar(32, ['number']);
+// 05099593713036830668381743720300
+```
 ### randomNumber 生成数字
 ``` ts
 randomNumber(100);
@@ -121,6 +132,17 @@ randomNumber(100);
 
 randomNumber(1, 3);
 // 2
+```
+### currency 千分位分隔
+``` ts
+currency(987654321);
+// '987,654,321.00'
+
+currency(987654321, 1);
+// '987,654,321.0'
+
+currency(987654321, 0);
+// '987,654,321'
 ```
 ### toHump 下划线转驼峰
 ``` ts

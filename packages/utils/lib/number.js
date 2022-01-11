@@ -158,3 +158,34 @@ export var randomNumber = function (min, max) {
     if (min === void 0) { min = 0; }
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
+/**
+ * 千分位分隔
+ * @param value
+ * @example
+ * ``` ts
+    currency(987654321);
+    // '987,654,321.00'
+
+    currency(987654321, 1);
+    // '987,654,321.0'
+
+    currency(987654321, 0);
+    // '987,654,321'
+    ```
+ */
+export var currency = function (value, len) {
+    if (len === void 0) { len = 2; }
+    if (!value)
+        return len ? "0.".concat(new Array(len).fill(0).join('')) : '0';
+    var newValue = Number(String(value).replace(/[^\d.-]/g, '')).toFixed(len) + '';
+    var left = newValue.split('.')[0].split('').reverse();
+    var right = newValue.split('.')[1];
+    var t = '';
+    for (var i = 0; i < left.length; i++) {
+        t += left[i] + ((i + 1) % 3 === 0 && i + 1 !== left.length ? ',' : '');
+    }
+    if (right) {
+        return t.split('').reverse().join('') + '.' + right;
+    }
+    return t.split('').reverse().join('');
+};

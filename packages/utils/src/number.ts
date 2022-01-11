@@ -157,3 +157,33 @@ export const convertCurrency = (money: number | string) => {
 export const randomNumber = (min = 0, max: number) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
+
+/**
+ * 千分位分隔
+ * @param value
+ * @example
+ * ``` ts
+    currency(987654321);
+    // '987,654,321.00'
+
+    currency(987654321, 1);
+    // '987,654,321.0'
+
+    currency(987654321, 0);
+    // '987,654,321'
+    ```
+ */
+export const currency = (value: string | number, len = 2) => {
+  if (!value) return len ? `0.${new Array(len).fill(0).join('')}` : '0';
+  const newValue = Number(String(value).replace(/[^\d.-]/g, '')).toFixed(len) + '';
+  const left = newValue.split('.')[0].split('').reverse();
+  const right = newValue.split('.')[1];
+  let t = '';
+  for (let i = 0; i < left.length; i++) {
+    t += left[i] + ((i + 1) % 3 === 0 && i + 1 !== left.length ? ',' : '');
+  }
+  if (right) {
+    return t.split('').reverse().join('') + '.' + right;
+  }
+  return t.split('').reverse().join('');
+};

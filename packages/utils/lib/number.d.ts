@@ -25,3 +25,19 @@ export declare const convertCurrency: (money: number | string) => string;
     ```
  */
 export declare const randomNumber: (min: number | undefined, max: number) => number;
+/**
+ * 千分位分隔
+ * @param value
+ * @example
+ * ``` ts
+    currency(987654321);
+    // '987,654,321.00'
+
+    currency(987654321, 1);
+    // '987,654,321.0'
+
+    currency(987654321, 0);
+    // '987,654,321'
+    ```
+ */
+export declare const currency: (value: string | number, len?: number) => string;
