@@ -170,8 +170,7 @@ uuid();
 ```
 
 ### RegExp+Name 正则校验
-使用[anyRule](https://github.com/any86/any-rule);
-在线正则查询(https://any86.github.io/any-rule/)  
+使用[anyRule](https://github.com/any86/any-rule)，[在线正则查询](https://any86.github.io/any-rule/)  
 
 - `Strict` 严谨的
 - `Loose` 宽松的
