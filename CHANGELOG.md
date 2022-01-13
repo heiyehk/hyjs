@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.1](https://github.com/heiyehk/hyjs/compare/v0.2.0...v0.2.1) (2022-01-13)
+
+
+### Features
+
+* 增加时间格式化 ([4141dfc](https://github.com/heiyehk/hyjs/commit/4141dfc18a474ac1377527312111f89d29d14115))
+
+
+
+
+
 # [0.2.0](https://github.com/heiyehk/hyjs/compare/v0.1.1...v0.2.0) (2022-01-11)
 
 
