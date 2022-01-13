@@ -169,6 +169,15 @@ uuid();
 // 15afbbae-a98b-b07c-df94-e2f916ac1cd1
 ```
 
+### dateFormatter 时间格式化
+``` ts
+dateFormatter('YYYY-MM-DD hh:mm:ss');
+// 2022-01-13 12:00:00
+
+dateFormatter('YYYY-MM-DD hh:mm:ss', 'Thu Jan 13 2022 12:00:00 GMT+0800 (中国标准时间)')
+// 2022-01-13 12:00:00
+```
+
 ### RegExp+Name 正则校验
 使用[anyRule](https://github.com/any86/any-rule)，[在线正则查询](https://any86.github.io/any-rule/)  
 
