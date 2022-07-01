@@ -3,11 +3,11 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 /**
- * 是否pc端
+ * 是否移动端
  * @returns
  * @example
  */
-var isPC = function () {
+var isMobile = function () {
     var agents = ['Android', 'iPhone', 'SymbianOS', 'Windows Phone', 'iPad', 'iPod'];
     return !!agents.filter(function (x) { return navigator.userAgent.includes(x); }).length;
 };
@@ -31,6 +31,39 @@ var getDevice = function () {
  * @returns
  */
 var ieIE = function () { return navigator.userAgent.toLowerCase().indexOf('trident') > -1; };
+/**
+ * 获取当前微信环境
+ * - `wx` 微信环境内
+ * - `mini-wx` 小程序内
+ * - `no-wx` 非微信
+ * @returns
+ */
+var getWxEnv = function () {
+    var ua = navigator.userAgent.toLowerCase();
+    var isWXWork = /wxwork/i.test(ua);
+    if (!isWXWork && /micromessenger/i.test(ua)) {
+        return new Promise(function (resolve) {
+            try {
+                // @ts-ignore
+                wx.miniProgram.getEnv(function (res) {
+                    if (res.miniprogram) {
+                        resolve('mini-wx');
+                    }
+                    else {
+                        resolve('wx');
+                    }
+                });
+            }
+            catch (error) {
+                resolve('wx');
+                console.error(error);
+            }
+        });
+    }
+    else {
+        return Promise.resolve('no-wx');
+    }
+};
 
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -1189,8 +1222,9 @@ exports.filterObjectEmpty = filterObjectEmpty;
 exports.getAccessType = getAccessType;
 exports.getAudioDuration = getAudioDuration;
 exports.getDevice = getDevice;
+exports.getWxEnv = getWxEnv;
 exports.ieIE = ieIE;
-exports.isPC = isPC;
+exports.isMobile = isMobile;
 exports.numberToChinese = numberToChinese;
 exports.random4Code = random4Code;
 exports.randomChar = randomChar;

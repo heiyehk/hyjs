@@ -1,4 +1,4 @@
-import { getDevice, ieIE, isPC } from './env';
+import { getDevice, ieIE, isMobile, getWxEnv } from './env';
 import {
   compressImage,
   convertBase64ToFile,
@@ -93,7 +93,8 @@ import { random4Code, randomChar, toHump, toLine, uuid } from './string';
 export {
   getDevice,
   ieIE,
-  isPC,
+  isMobile,
+  getWxEnv,
   compressImage,
   convertBase64ToFile,
   downloadFile,

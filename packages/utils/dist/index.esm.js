@@ -1,9 +1,9 @@
 /**
- * 是否pc端
+ * 是否移动端
  * @returns
  * @example
  */
-var isPC = function () {
+var isMobile = function () {
     var agents = ['Android', 'iPhone', 'SymbianOS', 'Windows Phone', 'iPad', 'iPod'];
     return !!agents.filter(function (x) { return navigator.userAgent.includes(x); }).length;
 };
@@ -27,6 +27,39 @@ var getDevice = function () {
  * @returns
  */
 var ieIE = function () { return navigator.userAgent.toLowerCase().indexOf('trident') > -1; };
+/**
+ * 获取当前微信环境
+ * - `wx` 微信环境内
+ * - `mini-wx` 小程序内
+ * - `no-wx` 非微信
+ * @returns
+ */
+var getWxEnv = function () {
+    var ua = navigator.userAgent.toLowerCase();
+    var isWXWork = /wxwork/i.test(ua);
+    if (!isWXWork && /micromessenger/i.test(ua)) {
+        return new Promise(function (resolve) {
+            try {
+                // @ts-ignore
+                wx.miniProgram.getEnv(function (res) {
+                    if (res.miniprogram) {
+                        resolve('mini-wx');
+                    }
+                    else {
+                        resolve('wx');
+                    }
+                });
+            }
+            catch (error) {
+                resolve('wx');
+                console.error(error);
+            }
+        });
+    }
+    else {
+        return Promise.resolve('no-wx');
+    }
+};
 
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -1098,4 +1131,4 @@ var uuid = function () {
         random4Code());
 };
 
-export { RegExp12Time, RegExp1IdNumber, RegExp24Time, RegExp2IdNumber, RegExpAMIDCard, RegExpAccount, RegExpAllNumberPlate, RegExpAlphanumeric, RegExpAmount, RegExpBase64, RegExpCN, RegExpCNName, RegExpCapital, RegExpCardNumber, RegExpCharacter, RegExpChineseAndNumbers, RegExpColor16, RegExpContinuousCharacters, RegExpDate, RegExpDecimals, RegExpENName, RegExpEd2k, RegExpEmail, RegExpEmailLoose, RegExpEnglishAlphabet, RegExpFloatingNumber, RegExpGrade, RegExpHKIDCard, RegExpHTMLAnnotation, RegExpHTMLDOM, RegExpIMEI, RegExpIP, RegExpIPV4, RegExpIPV6, RegExpIdNumber, RegExpImageUrlPath, RegExpInteger, RegExpJavaPackageName, RegExpLinuxDirPath, RegExpLinuxFilePath, RegExpLinuxHiddenDirPath, RegExpLowercase, RegExpMD5, RegExpMac, RegExpMagnet, RegExpMobilePhoneLoose, RegExpMobilePhoneNumberStrict, RegExpMobilePhoneNunber, RegExpNegativeInteger, RegExpNewEnergyNumberPlate, RegExpNotLetter, RegExpNumber, RegExpNumberAmount, RegExpNumberPlate, RegExpPassport, RegExpPasswordStrength, RegExpPositiveInteger, RegExpPostalCode, RegExpQQNumber, RegExpRungDate, RegExpSocialCreditCode, RegExpSocialCreditCodeStrict, RegExpStockA, RegExpStrongPassword, RegExpSubNet, RegExpTWIDCard, RegExpTelPhone, RegExpThunder, RegExpTrain, RegExpURL, RegExpUserName, RegExpUuid, RegExpVersion, RegExpVideoUrlPath, RegExpWXNumber, RegExpWindowsDirPath, RegExpWindowsFilePath, compressImage, convertBase64ToFile, convertCurrency, debounce, downloadFile, fileToBase64, filterObjectEmpty, getAccessType, getAudioDuration, getDevice, ieIE, isPC, numberToChinese, random4Code, randomChar, randomNumber, sleep, throttle, toHump, toLine, uuid };
+export { RegExp12Time, RegExp1IdNumber, RegExp24Time, RegExp2IdNumber, RegExpAMIDCard, RegExpAccount, RegExpAllNumberPlate, RegExpAlphanumeric, RegExpAmount, RegExpBase64, RegExpCN, RegExpCNName, RegExpCapital, RegExpCardNumber, RegExpCharacter, RegExpChineseAndNumbers, RegExpColor16, RegExpContinuousCharacters, RegExpDate, RegExpDecimals, RegExpENName, RegExpEd2k, RegExpEmail, RegExpEmailLoose, RegExpEnglishAlphabet, RegExpFloatingNumber, RegExpGrade, RegExpHKIDCard, RegExpHTMLAnnotation, RegExpHTMLDOM, RegExpIMEI, RegExpIP, RegExpIPV4, RegExpIPV6, RegExpIdNumber, RegExpImageUrlPath, RegExpInteger, RegExpJavaPackageName, RegExpLinuxDirPath, RegExpLinuxFilePath, RegExpLinuxHiddenDirPath, RegExpLowercase, RegExpMD5, RegExpMac, RegExpMagnet, RegExpMobilePhoneLoose, RegExpMobilePhoneNumberStrict, RegExpMobilePhoneNunber, RegExpNegativeInteger, RegExpNewEnergyNumberPlate, RegExpNotLetter, RegExpNumber, RegExpNumberAmount, RegExpNumberPlate, RegExpPassport, RegExpPasswordStrength, RegExpPositiveInteger, RegExpPostalCode, RegExpQQNumber, RegExpRungDate, RegExpSocialCreditCode, RegExpSocialCreditCodeStrict, RegExpStockA, RegExpStrongPassword, RegExpSubNet, RegExpTWIDCard, RegExpTelPhone, RegExpThunder, RegExpTrain, RegExpURL, RegExpUserName, RegExpUuid, RegExpVersion, RegExpVideoUrlPath, RegExpWXNumber, RegExpWindowsDirPath, RegExpWindowsFilePath, compressImage, convertBase64ToFile, convertCurrency, debounce, downloadFile, fileToBase64, filterObjectEmpty, getAccessType, getAudioDuration, getDevice, getWxEnv, ieIE, isMobile, numberToChinese, random4Code, randomChar, randomNumber, sleep, throttle, toHump, toLine, uuid };

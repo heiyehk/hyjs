@@ -9,7 +9,6 @@ const __dirname = path.dirname(__filename);
 const packages = fs.readdirSync(path.resolve(__dirname, '../packages'));
 const deleteDirName = ['dist', 'lib', 'tsconfig.json'];
 
-console.log('\n');
 packages.forEach((key) => {
   const pkgDir = path.join(__dirname, `../packages/${key}`);
   deleteDirName.forEach((dirName) => {

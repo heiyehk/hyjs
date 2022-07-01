@@ -16,7 +16,6 @@ const tsconfigTemplate = {
   exclude: ['node_modules', 'dist']
 };
 
-console.log('\n');
 packages.forEach((key) => {
   const pkgTsconfigDir = path.join(__dirname, `../packages/${key}/tsconfig.json`);
   const generateSuccess = fs.writeFileSync(
