@@ -1,8 +1,3 @@
----
-title: utils
-doc: true
----
-
 # `utils`
 
 > 一些常用的工具类
@@ -31,7 +26,7 @@ getDevice();
 isIE();
 // boolean
 ```
-## is移动 是否移动端
+## isMobile 是否移动端
 ``` ts
 isMobile();
 // boolean
@@ -67,13 +62,13 @@ await getAudioDuration(file);
 ```
 ## getAccessType 获取类型函数
 ``` ts
-getAccessType({});
+const accessType = getAccessType({});
 // Object
 
-getAccessType(new RegExp());
+const accessType = getAccessType(new RegExp());
 // RegExp
 
-getAccessType(Symbol());
+const accessType = getAccessType(Symbol());
 // Symbol
 
 ...

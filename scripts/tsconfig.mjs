@@ -2,28 +2,25 @@ import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const packages = fs.readdirSync(path.resolve(__dirname, '../packages'));
-
 const tsconfigTemplate = {
   extends: '../../tsconfig.json',
   compilerOptions: {
     outDir: './lib',
-    rootDir: 'src'
+    rootDir: './src'
   },
-  exclude: ['node_modules', 'dist']
+  exclude: [
+    'node_modules',
+    'dist'
+  ]
 };
 
-packages.forEach((key) => {
-  const pkgTsconfigDir = path.join(__dirname, `../packages/${key}/tsconfig.json`);
-  const generateSuccess = fs.writeFileSync(
-    pkgTsconfigDir,
-    JSON.stringify(tsconfigTemplate, null, 2)
-  );
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const packagesPath = path.resolve(__dirname, '../packages');
 
-  if (generateSuccess) throw generateSuccess;
-  console.log(`[create tsconfig]: generate ${key} tsconfig.json successful!`);
-});
-console.log('\n');
+const dir = process.argv[2];
+const pkgJsonPath = path.join(packagesPath, dir, 'tsconfig.json');
+const updateState = fs.writeFileSync(pkgJsonPath, JSON.stringify(tsconfigTemplate, null, 2));
+
+if (updateState) throw updateState;
+console.log(`[update tsconfig]: update ${dir} tsconfig.json successful!`);

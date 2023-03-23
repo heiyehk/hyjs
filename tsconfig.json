@@ -16,8 +16,7 @@
     "listEmittedFiles": true,
     "moduleResolution": "Node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    "isolatedModules": false,
   },
-  "include": ["packages/**/*"],
   "exclude": ["node_modules", "packages/**/lib", "packages/**/dist"]
 }

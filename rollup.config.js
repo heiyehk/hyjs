@@ -4,6 +4,8 @@ import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import { terser } from 'rollup-plugin-terser';
 import replace from '@rollup/plugin-replace';
+import svelte from 'rollup-plugin-svelte';
+import resolve from '@rollup/plugin-node-resolve';
 // import { babel } from '@rollup/plugin-babel';
 
 const packages = fs.readdirSync(path.resolve(__dirname, 'packages'));
@@ -37,6 +39,21 @@ const configs = packages.map(key => {
       console.error(`\n[rollup message]: ${warning.message}\n`);
     }
   };
+
+  if (pkg.svelte) {
+    common.plugins.concat([
+      svelte({
+        compilerOptions: {
+          // 在非生产环境中开启运行时检查
+          dev: !production
+        }
+      }),
+      resolve({
+        browser: true,
+        dedupe: ['svelte']
+      })
+    ]);
+  }
 
   /** @type {import('rollup').RollupOptions} */
   const config = {

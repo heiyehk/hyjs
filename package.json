@@ -3,12 +3,17 @@
   "private": true,
   "scripts": {
     "clean": "node scripts/clean.mjs",
-    "build": "npm run clean && npm run gts && lerna run build --stream && rollup -c",
+    "build": "npm run clean && lerna run build --stream && rollup -c",
     "build:ci": "cross-env UMD=1 npm run build",
-    "gts": "node scripts/tsconfig.mjs",
+    "tsc": "node scripts/tsconfig.mjs",
+    "pkg": "node scripts/packageJson.mjs",
     "lint": "eslint ./packages --ext ts",
     "fix": "eslint ./packages --ext ts --fix",
-    "docs:dev": "vitepress dev docs --host"
+    "doc": "docsify",
+    "doc:init": "docsify init .",
+    "doc:serve": "docsify serve .",
+    "doc:bar": "node scripts/docBar.mjs",
+    "r": "rollup -c -w"
   },
   "devDependencies": {
     "@babel/core": "^7.16.5",
@@ -19,12 +24,14 @@
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.1.1",
     "@rollup/plugin-replace": "^3.0.1",
+    "@tsconfig/svelte": "^3.0.0",
     "@types/fs-extra": "^9.0.13",
     "@types/node": "^17.0.5",
     "@types/rimraf": "^3.0.2",
     "@typescript-eslint/eslint-plugin": "^5.8.1",
     "@typescript-eslint/parser": "^5.8.1",
     "cross-env": "^7.0.3",
+    "docsify-cli": "^4.4.4",
     "eslint": "^8.5.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
@@ -34,10 +41,11 @@
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
     "rollup": "^2.62.0",
+    "rollup-plugin-svelte": "^7.1.0",
     "rollup-plugin-terser": "^7.0.2",
+    "svelte": "^3.55.1",
     "ts-node": "^10.4.0",
-    "typescript": "^4.5.4",
-    "vitepress": "1.0.0-alpha.4"
+    "typescript": "^4.5.4"
   },
   "publishConfig": {
     "access": "public"
