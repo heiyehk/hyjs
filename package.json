@@ -13,7 +13,8 @@
     "doc:init": "docsify init .",
     "doc:serve": "docsify serve .",
     "doc:bar": "node scripts/docBar.mjs",
-    "r": "rollup -c -w"
+    "r": "rollup -c -w",
+    "test": "jest"
   },
   "devDependencies": {
     "@babel/core": "^7.16.5",
@@ -26,6 +27,7 @@
     "@rollup/plugin-replace": "^3.0.1",
     "@tsconfig/svelte": "^3.0.0",
     "@types/fs-extra": "^9.0.13",
+    "@types/jest": "^29.5.0",
     "@types/node": "^17.0.5",
     "@types/rimraf": "^3.0.2",
     "@typescript-eslint/eslint-plugin": "^5.8.1",
@@ -37,6 +39,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "fs-extra": "^10.0.0",
+    "jest": "^29.5.0",
     "lerna": "^4.0.0",
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",

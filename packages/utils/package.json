@@ -1,7 +1,7 @@
 {
   "name": "@hyjs/utils",
-  "version": "0.2.2",
-  "description": "在JavaScript/Node.js中的一些常用工具函数",
+  "version": "0.2.4",
+  "description": "Some common utility functions in JavaScript/Node.js",
   "author": "heiyehk <heiyehk@foxmail.com>",
   "homepage": "https://github.com/heiyehk/hyjs#readme",
   "license": "MIT",
