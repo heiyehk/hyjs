@@ -1,6 +1,13 @@
 {
   "name": "root",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heiyehk/hyjs.git"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "clean": "node scripts/clean.mjs",
     "build": "npm run clean && lerna run build --stream && rollup -c",
@@ -14,7 +21,8 @@
     "doc:serve": "docsify serve .",
     "doc:bar": "node scripts/docBar.mjs",
     "r": "rollup -c -w",
-    "test": "jest"
+    "test": "jest",
+    "lerna": "lerna"
   },
   "devDependencies": {
     "@babel/core": "^7.16.5",
