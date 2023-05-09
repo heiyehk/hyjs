@@ -1,6 +1,7 @@
 {
   "packages": [
-    "packages/*"
+    "packages/utils",
+    "packages/tauri-sql-orm"
   ],
   "version": "independent",
   "command": {

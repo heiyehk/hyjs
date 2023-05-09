@@ -13,18 +13,27 @@
  */
 export var dateFormatter = function (formatter, date) {
     var dateAfter = date ? new Date(date) : new Date();
-    var Y = dateAfter.getFullYear() + '';
+    if (isNaN(dateAfter.getTime())) {
+        throw new Error("Invalid date: ".concat(date));
+    }
+    var Y = dateAfter.getFullYear();
     var M = dateAfter.getMonth() + 1;
     var D = dateAfter.getDate();
     var H = dateAfter.getHours();
     var m = dateAfter.getMinutes();
     var s = dateAfter.getSeconds();
-    return formatter
-        .replace(/YYYY|yyyy/g, Y)
-        .replace(/YY|yy/g, Y.substring(2, 2))
-        .replace(/MM/g, (M < 10 ? '0' : '') + M)
-        .replace(/DD/g, (D < 10 ? '0' : '') + D)
-        .replace(/HH|hh/g, (H < 10 ? '0' : '') + H)
-        .replace(/mm/g, (m < 10 ? '0' : '') + m)
-        .replace(/ss/g, (s < 10 ? '0' : '') + s);
+    var formatNumber = function (n) { return String((n < 10 ? '0' + n : n)); };
+    var matches = {
+        YYYY: Y,
+        YY: Y % 100,
+        MM: M,
+        DD: D,
+        HH: H,
+        hh: H % 12 || 12,
+        mm: m,
+        ss: s,
+    };
+    return formatter.replace(/YYYY|YY|MM|DD|HH|hh|mm|ss/g, function (match) {
+        return matches[match] !== undefined ? formatNumber(matches[match]) : match;
+    });
 };

@@ -52,53 +52,54 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 import SqlDatabase from 'tauri-plugin-sql-api';
 import Model from './model';
 var SqlORM = /** @class */ (function () {
+    /**
+     * ### SQL ORM
+     *
+     * The path is relative to `tauri::api::path::BaseDirectory::App`
+     *
+     * and must start with `sqlite:` or `mysql:` or `postgres:`
+     *
+     * @class SqlORM
+     * @example const test = new SqlORM('sqlite:test.db');
+     */
     function SqlORM(path) {
         /** 数据库实例 */
         this.db = null;
         /** 数据库路径 */
         this.path = '';
-        this.init(path);
+        this.databaseType = '';
+        this.path = path;
+        this.databaseType = path.split(':')[0];
+        this.connect();
     }
-    SqlORM.prototype.init = function (path) {
-        return __awaiter(this, void 0, void 0, function () {
-            var _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        _a = this;
-                        return [4 /*yield*/, this.parsingPath(path)];
-                    case 1:
-                        _a.path = _b.sent();
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
-    SqlORM.prototype.getDB = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
-            return __generator(this, function (_a) {
-                return [2 /*return*/, new Promise(function (resolve) {
-                        var timer = setInterval(function () {
-                            _this.db = SqlDatabase.load(_this.path);
-                            if (_this.db) {
-                                clearInterval(timer);
-                                resolve(_this.db);
-                            }
-                        }, 100);
-                    })];
-            });
-        });
-    };
-    SqlORM.prototype.parsingPath = function (path) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (path.startsWith('sqlite:'))
-                    return [2 /*return*/, path];
-                return [2 /*return*/, "sqlite:".concat(path)];
-            });
-        });
-    };
+    Object.defineProperty(SqlORM.prototype, "getDB", {
+        get: function () {
+            return this.db;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    /**
+     * ### Define a model
+     * @param modelName
+     * @param attributes
+     * @param options
+     * @example
+     * ``` ts
+     * const Test = test.define('test', {
+     *   id: {
+     *     type: DataTypes.INTEGER,
+     *     primaryKey: true,
+     *     autoIncrement: true
+     *   },
+     *   name: {
+     *     type: DataTypes.TEXT,
+     *     allowNull: false
+     *   }
+     * });
+     * ```
+     * @returns
+     */
     SqlORM.prototype.define = function (modelName, attributes, options) {
         if (attributes === void 0) { attributes = {}; }
         if (options === void 0) { options = {}; }
@@ -109,9 +110,10 @@ var SqlORM = /** @class */ (function () {
                     case 0:
                         options.modelName = modelName;
                         _a = options;
-                        return [4 /*yield*/, this.getDB()];
+                        return [4 /*yield*/, this.getDB];
                     case 1:
                         _a.db = _b.sent();
+                        options.databaseType = this.databaseType;
                         model = /** @class */ (function (_super) {
                             __extends(model, _super);
                             function model() {
@@ -128,21 +130,36 @@ var SqlORM = /** @class */ (function () {
     SqlORM.prototype.connect = function (callback) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                this.db = this.getDB();
-                if (callback && typeof callback === 'function')
-                    callback();
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0:
+                        if (!this.path)
+                            throw new Error('Database path is not defined.');
+                        this.db = SqlDatabase.load(this.path).catch(function (error) {
+                            throw new Error(error);
+                        });
+                        return [4 /*yield*/, this.getDB];
+                    case 1:
+                        _a.sent();
+                        if (callback && typeof callback === 'function')
+                            callback();
+                        return [2 /*return*/];
+                }
             });
         });
     };
+    /**
+     * ### Close the database
+     * @example
+     * ``` ts
+     * test.close();
+     * ```
+     */
     SqlORM.prototype.close = function () {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0:
-                        this.path = '';
-                        return [4 /*yield*/, this.db];
+                    case 0: return [4 /*yield*/, this.db];
                     case 1:
                         (_a = (_b.sent())) === null || _a === void 0 ? void 0 : _a.close();
                         this.db = null;

@@ -1,57 +1,91 @@
 import SqlDatabase from 'tauri-plugin-sql-api';
 
-import Model from './model';
+import Model, { DatabaseType, ModelOptions } from './model';
+
+export type DatabasePath = `${'sqlite' | 'mysql' | 'postgres'}:${string}`;
 
 export default class SqlORM {
   /** 数据库实例 */
-  db: Promise<SqlDatabase> | null = null;
+  private db: Promise<SqlDatabase> | null = null;
 
   /** 数据库路径 */
-  path = '';
+  private path = '';
 
-  constructor(path: string) {
-    this.init(path);
+  private databaseType: DatabaseType | '' = '';
+
+  /**
+   * ### SQL ORM
+   *
+   * The path is relative to `tauri::api::path::BaseDirectory::App`
+   *
+   * and must start with `sqlite:` or `mysql:` or `postgres:`
+   *
+   * @class SqlORM
+   * @example const test = new SqlORM('sqlite:test.db');
+   */
+  constructor(path: DatabasePath) {
+    this.path = path;
+    this.databaseType = path.split(':')[0] as 'sqlite' | 'mysql' | 'postgres' | '';
+    this.connect();
   }
 
-  async init(path: string) {
-    this.path = await this.parsingPath(path);
+  private get getDB() {
+    return this.db;
   }
 
-  async getDB(): Promise<SqlDatabase> {
-    return new Promise((resolve) => {
-      const timer = setInterval(() => {
-        this.db = SqlDatabase.load(this.path);
-        if (this.db) {
-          clearInterval(timer);
-          resolve(this.db);
-        }
-      }, 100);
-    });
-  }
-
-  async parsingPath(path: string) {
-    if (path.startsWith('sqlite:')) return path;
-    return `sqlite:${path}`;
-  }
-
-  async define(modelName: string, attributes: Record<string, any> = {}, options: Record<string, any> = {}) {
+  /**
+   * ### Define a model
+   * @param modelName
+   * @param attributes
+   * @param options
+   * @example
+   * ``` ts
+   * const Test = test.define('test', {
+   *   id: {
+   *     type: DataTypes.INTEGER,
+   *     primaryKey: true,
+   *     autoIncrement: true
+   *   },
+   *   name: {
+   *     type: DataTypes.TEXT,
+   *     allowNull: false
+   *   }
+   * });
+   * ```
+   * @returns
+   */
+  public async define(
+    modelName: string,
+    attributes: Record<string, any> = {},
+    options: Record<string, any> & ModelOptions = {}
+  ) {
     options.modelName = modelName;
-    options.db = await this.getDB();
+    options.db = await this.getDB;
+    options.databaseType = this.databaseType;
 
     const model = class extends Model { };
-
     model.init(modelName, attributes, options);
 
     return model;
   }
 
-  async connect(callback?: () => void) {
-    this.db = this.getDB();
+  public async connect(callback?: () => void) {
+    if (!this.path) throw new Error('Database path is not defined.');
+    this.db = SqlDatabase.load(this.path).catch((error) => {
+      throw new Error(error);
+    });
+    await this.getDB;
     if (callback && typeof callback === 'function') callback();
   }
 
-  async close() {
-    this.path = '';
+  /**
+   * ### Close the database
+   * @example
+   * ``` ts
+   * test.close();
+   * ```
+   */
+  public async close() {
     (await this.db)?.close();
     this.db = null;
   }

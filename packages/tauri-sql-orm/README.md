@@ -73,12 +73,26 @@ The force will delete before the table and then recreated
 TestDB.sync({ force: true });
 ```
 
-#### Add data
+#### create data
 ``` ts
 await TestDB.create({
   name: 'test',
   text: 1
 });
+```
+
+#### bulkCreate data
+``` ts
+await TestDb.bulkCreate([
+  {
+    name: 'test',
+    text: 1
+  },
+  {
+    name: 'test',
+    text: 1
+  }
+]);
 ```
 
 #### findAll
