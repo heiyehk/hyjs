@@ -1,4 +1,4 @@
-# `tauri-sql-orm`
+# `tauri-sql-orm`[experimental]
 
 ### Description of tauri-plugin-sql-api's ORM encapsulation
 
