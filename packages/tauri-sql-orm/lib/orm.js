@@ -53,21 +53,26 @@ import SqlDatabase from 'tauri-plugin-sql-api';
 import Model from './model';
 var SqlORM = /** @class */ (function () {
     /**
-     * ### SQL ORM
+     * #### SQL ORM
      *
      * The path is relative to `tauri::api::path::BaseDirectory::App`
      *
      * and must start with `sqlite:` or `mysql:` or `postgres:`
      *
      * @class SqlORM
-     * @example const test = new SqlORM('sqlite:test.db');
+     * @example
+     *
+     * ``` ts
+     * const sqlite = new SqlORM('sqlite:test.db');
+     * const mysql = new SqlORM('mysql://root:root@localhost/database');
+     * const postgres = new SqlORM('postgres://postgres:root@localhost:5432/postgres');
+     * ```
      */
     function SqlORM(path) {
-        /** 数据库实例 */
+        /** database instance */
         this.db = null;
-        /** 数据库路径 */
+        /** database path */
         this.path = '';
-        this.databaseType = '';
         this.path = path;
         this.databaseType = path.split(':')[0];
         this.connect();
@@ -80,7 +85,7 @@ var SqlORM = /** @class */ (function () {
         configurable: true
     });
     /**
-     * ### Define a model
+     * #### Define a model
      * @param modelName
      * @param attributes
      * @param options
@@ -121,12 +126,13 @@ var SqlORM = /** @class */ (function () {
                             }
                             return model;
                         }(Model));
-                        model.init(modelName, attributes, options);
+                        model._init(modelName, attributes, options);
                         return [2 /*return*/, model];
                 }
             });
         });
     };
+    /** Connect to the database */
     SqlORM.prototype.connect = function (callback) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -147,13 +153,7 @@ var SqlORM = /** @class */ (function () {
             });
         });
     };
-    /**
-     * ### Close the database
-     * @example
-     * ``` ts
-     * test.close();
-     * ```
-     */
+    /** Close the database */
     SqlORM.prototype.close = function () {
         var _a;
         return __awaiter(this, void 0, void 0, function () {

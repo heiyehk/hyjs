@@ -1,26 +1,33 @@
 import SqlDatabase from 'tauri-plugin-sql-api';
-import Model, { DatabaseType, ModelOptions } from './model';
+import Model from './model';
+import type { DatabaseType, ModelAttributes, ModelDefineOptions } from './type';
 export declare type DatabasePath = `${'sqlite' | 'mysql' | 'postgres'}:${string}`;
 export default class SqlORM {
-    /** 数据库实例 */
+    /** database instance */
     private db;
-    /** 数据库路径 */
+    /** database path */
     private path;
     private databaseType;
     /**
-     * ### SQL ORM
+     * #### SQL ORM
      *
      * The path is relative to `tauri::api::path::BaseDirectory::App`
      *
      * and must start with `sqlite:` or `mysql:` or `postgres:`
      *
      * @class SqlORM
-     * @example const test = new SqlORM('sqlite:test.db');
+     * @example
+     *
+     * ``` ts
+     * const sqlite = new SqlORM('sqlite:test.db');
+     * const mysql = new SqlORM('mysql://root:root@localhost/database');
+     * const postgres = new SqlORM('postgres://postgres:root@localhost:5432/postgres');
+     * ```
      */
     constructor(path: DatabasePath);
     private get getDB();
     /**
-     * ### Define a model
+     * #### Define a model
      * @param modelName
      * @param attributes
      * @param options
@@ -40,19 +47,21 @@ export default class SqlORM {
      * ```
      * @returns
      */
-    define(modelName: string, attributes?: Record<string, any>, options?: Record<string, any> & ModelOptions): Promise<{
-        new (): {
-            [x: string]: any;
-        };
+    define(modelName: string, attributes?: ModelAttributes, options?: ModelDefineOptions): Promise<{
+        new (): {};
         db: SqlDatabase;
         rawAttributes: Record<string, any>;
+        rawOptions: import("./type").ModelOptions;
         modelName: string;
+        _modelPrimaryKey?: string | null | undefined;
         databaseType: DatabaseType;
-        rawOptions: Record<string, any> & ModelOptions;
         readonly getDB: SqlDatabase;
-        readonly getRawAttributes: Record<string, any>;
-        readonly getDBPath: string;
-        init(modelName: string, attributes?: Record<string, any>, options?: Record<string, any> & ModelOptions): Promise<typeof Model>;
+        readonly _getRawAttributes: Record<string, any>;
+        readonly _getRawOptions: import("./type").ModelOptions;
+        readonly _getTimezoneDate: string;
+        _init(modelName: string, attributes: ModelAttributes, options: ModelDefineOptions): typeof Model;
+        _setRawOptions(options: ModelDefineOptions): Promise<void>;
+        _setTimestampsAttributes(attributes: ModelAttributes): Promise<void>;
         sync(options?: {
             force?: boolean | undefined;
         } | undefined): Promise<{
@@ -61,21 +70,15 @@ export default class SqlORM {
         }>;
         create(data: Record<string, any>): Promise<import("tauri-plugin-sql-api").QueryResult>;
         bulkCreate(data: Record<string, any>[]): Promise<import("tauri-plugin-sql-api").QueryResult>;
-        update(attributes: Record<string, any>, options: Record<string, any>): Promise<import("tauri-plugin-sql-api").QueryResult>;
-        destroy(options: Record<string, any>): Promise<import("tauri-plugin-sql-api").QueryResult>;
-        findOne(options: Record<string, any>): Promise<unknown>;
-        findAll(options?: import("./model").FindOptions): Promise<unknown>;
-        execute(sql: string, value?: any[] | undefined): Promise<import("tauri-plugin-sql-api").QueryResult | undefined>;
-        select(sql: string, value?: any[] | undefined): Promise<unknown>;
+        update(data: Record<string, any>, options?: import("./type").FindOptionsWhere | undefined): Promise<import("tauri-plugin-sql-api").QueryResult>;
+        findOne(options?: import("./type").FindOptionsWhere | undefined): Promise<any>;
+        findAll(options?: import("./type").FindAllOptions | undefined): Promise<unknown>;
+        destroy(options?: import("./type").DestroyOptions | undefined): Promise<import("tauri-plugin-sql-api").QueryResult>;
+        restore(options: import("./type").FindOptionsWhere): Promise<import("tauri-plugin-sql-api").QueryResult>;
         drop(): Promise<import("tauri-plugin-sql-api").QueryResult>;
     }>;
+    /** Connect to the database */
     connect(callback?: () => void): Promise<void>;
-    /**
-     * ### Close the database
-     * @example
-     * ``` ts
-     * test.close();
-     * ```
-     */
+    /** Close the database */
     close(): Promise<void>;
 }

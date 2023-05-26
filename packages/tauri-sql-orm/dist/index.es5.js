@@ -25,6 +25,48 @@
         return DataTypes;
     }());
 
+    var __read$1 = (undefined && undefined.__read) || function (o, n) {
+        var m = typeof Symbol === "function" && o[Symbol.iterator];
+        if (!m) return o;
+        var i = m.call(o), r, ar = [], e;
+        try {
+            while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+        }
+        catch (error) { e = { error: error }; }
+        finally {
+            try {
+                if (r && !r.done && (m = i["return"])) m.call(i);
+            }
+            finally { if (e) throw e.error; }
+        }
+        return ar;
+    };
+    /**
+     * get current local time
+     * @param {string} timezone
+     */
+    var getLocalTime = function (timezone) {
+        if (timezone === void 0) { timezone = '+00:00'; }
+        if (timezone === undefined) {
+            return new Date().toISOString();
+        }
+        var _a = __read$1(timezone.split(':'), 3), _b = _a[0], sign = _b === void 0 ? '00' : _b, _c = _a[1], hour = _c === void 0 ? '00' : _c, _d = _a[2], minute = _d === void 0 ? '00' : _d;
+        var offset = parseInt(hour) * 3600000 + parseInt(minute) * 60000;
+        var localTime = sign === '+' ? new Date().getTime() + offset : new Date().getTime() - offset;
+        return new Date(localTime).toISOString();
+    };
+
+    var __assign = (undefined && undefined.__assign) || function () {
+        __assign = Object.assign || function(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                    t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
+    };
     var __awaiter$1 = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
         return new (P || (P = Promise))(function (resolve, reject) {
@@ -61,32 +103,47 @@
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
+    var __values = (undefined && undefined.__values) || function(o) {
+        var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+        if (m) return m.call(o);
+        if (o && typeof o.length === "number") return {
+            next: function () {
+                if (o && i >= o.length) o = void 0;
+                return { value: o && o[i++], done: !o };
+            }
+        };
+        throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+    };
+    var __read = (undefined && undefined.__read) || function (o, n) {
+        var m = typeof Symbol === "function" && o[Symbol.iterator];
+        if (!m) return o;
+        var i = m.call(o), r, ar = [], e;
+        try {
+            while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+        }
+        catch (error) { e = { error: error }; }
+        finally {
+            try {
+                if (r && !r.done && (m = i["return"])) m.call(i);
+            }
+            finally { if (e) throw e.error; }
+        }
+        return ar;
+    };
+    var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
+        if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+            if (ar || !(i in from)) {
+                if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+                ar[i] = from[i];
+            }
+        }
+        return to.concat(ar || Array.prototype.slice.call(from));
+    };
+    /** database auto increment */
     var autoIncrement = {
         sqlite: 'AUTOINCREMENT',
         mysql: 'AUTO_INCREMENT',
         postgres: 'SERIAL'
-    };
-    var getKeysAndValues = function (obj, options) {
-        var keys = Object.keys(obj);
-        var values = Object.values(obj);
-        if (options.timestamps) {
-            if (options.createdAt) {
-                var createdAtKey = typeof options.createdAt === 'string' ? options.createdAt : 'createdAt';
-                keys.push(createdAtKey);
-                values.push(new Date().toISOString());
-            }
-            if (options.updatedAt) {
-                var updatedAtKey = typeof options.updatedAt === 'string' ? options.updatedAt : 'updatedAt';
-                keys.push(updatedAtKey);
-                values.push(new Date().toISOString());
-            }
-            if (options.deletedAt) {
-                var deletedAtKey = typeof options.deletedAt === 'string' ? options.deletedAt : 'deletedAt';
-                keys.push(deletedAtKey);
-                values.push(null);
-            }
-        }
-        return { keys: keys, values: values };
     };
     var Model = /** @class */ (function () {
         function Model() {
@@ -98,45 +155,98 @@
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(Model, "getRawAttributes", {
+        Object.defineProperty(Model, "_getRawAttributes", {
             get: function () {
                 return this.rawAttributes;
             },
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(Model, "getDBPath", {
+        Object.defineProperty(Model, "_getRawOptions", {
             get: function () {
-                return this.db.path;
+                return this.rawOptions;
             },
             enumerable: false,
             configurable: true
         });
-        /**
-         * init model
-         * @param modelName
-         * @param attributes
-         * @param options
-         * @returns
-         */
-        Model.init = function (modelName, attributes, options) {
-            if (attributes === void 0) { attributes = {}; }
-            if (options === void 0) { options = {}; }
+        Object.defineProperty(Model, "_getTimezoneDate", {
+            get: function () {
+                return getLocalTime(this._getRawOptions.timezone);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Model._init = function (modelName, attributes, options) {
+            this._modelPrimaryKey = findPrimaryKey(attributes);
+            this.db = options.db;
+            this.modelName = modelName;
+            this._setRawOptions(options);
+            this._setTimestampsAttributes(attributes);
+            return this;
+        };
+        Model._setRawOptions = function (options) {
             return __awaiter$1(this, void 0, void 0, function () {
-                var _a;
-                return __generator$1(this, function (_b) {
-                    switch (_b.label) {
-                        case 0:
-                            _a = this;
-                            return [4 /*yield*/, options.db];
-                        case 1:
-                            _a.db = _b.sent();
-                            this.modelName = modelName;
-                            this.rawAttributes = attributes;
-                            this.databaseType = options.databaseType;
-                            this.rawOptions = options;
-                            return [2 /*return*/, this];
+                var rawOptions;
+                return __generator$1(this, function (_a) {
+                    rawOptions = __assign({}, options);
+                    if (rawOptions.timestamps) {
+                        if (rawOptions.createdAt === false) {
+                            rawOptions.createdAt = false;
+                        }
+                        else {
+                            rawOptions.createdAt =
+                                rawOptions.createdAt === undefined ? 'createdAt' : rawOptions.createdAt;
+                        }
+                        if (rawOptions.updatedAt === false) {
+                            rawOptions.updatedAt = false;
+                        }
+                        else {
+                            rawOptions.updatedAt =
+                                rawOptions.updatedAt === undefined ? 'updatedAt' : rawOptions.updatedAt;
+                        }
+                        if (rawOptions.deletedAt === false) {
+                            rawOptions.deletedAt = false;
+                        }
+                        else {
+                            rawOptions.deletedAt =
+                                rawOptions.deletedAt === undefined ? 'deletedAt' : rawOptions.deletedAt;
+                        }
                     }
+                    else {
+                        rawOptions.createdAt = false;
+                        rawOptions.updatedAt = false;
+                        rawOptions.deletedAt = false;
+                    }
+                    this.rawOptions = rawOptions;
+                    this.databaseType = rawOptions.databaseType;
+                    return [2 /*return*/];
+                });
+            });
+        };
+        Model._setTimestampsAttributes = function (attributes) {
+            return __awaiter$1(this, void 0, void 0, function () {
+                var rawAttributes, timestampsAttr, _a, _b, key;
+                var e_1, _c;
+                return __generator$1(this, function (_d) {
+                    rawAttributes = __assign({}, attributes);
+                    timestampsAttr = accessTimestamps(this._getRawOptions);
+                    if (Object.keys.length) {
+                        try {
+                            for (_a = __values(Object.keys(timestampsAttr)), _b = _a.next(); !_b.done; _b = _a.next()) {
+                                key = _b.value;
+                                rawAttributes[timestampsAttr[key].key] = timestampsAttr[key].properties;
+                            }
+                        }
+                        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                        finally {
+                            try {
+                                if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
+                            }
+                            finally { if (e_1) throw e_1.error; }
+                        }
+                    }
+                    this.rawAttributes = rawAttributes;
+                    return [2 /*return*/];
                 });
             });
         };
@@ -159,12 +269,12 @@
          */
         Model.sync = function (options) {
             return __awaiter$1(this, void 0, void 0, function () {
-                var keys, createdAtKey, updatedAtKey, deletedAtKey, sqlValue, sql, result;
+                var keys, sqlValue, sql, result;
                 var _this = this;
                 return __generator$1(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            if (!this.getRawAttributes)
+                            if (!this._getRawAttributes)
                                 throw new Error('Model not initialized, attributes is undefined.');
                             if (!(options && options.force)) return [3 /*break*/, 2];
                             return [4 /*yield*/, this.drop()];
@@ -172,63 +282,43 @@
                             _a.sent();
                             _a.label = 2;
                         case 2:
-                            keys = Object.keys(this.getRawAttributes);
-                            if (this.rawOptions.timestamps) {
-                                if (this.rawOptions.createdAt) {
-                                    createdAtKey = typeof this.rawOptions.createdAt === 'string' ? this.rawOptions.createdAt : 'createdAt';
-                                    this.getRawAttributes[createdAtKey] = {
-                                        type: 'DATE',
-                                        allowNull: false
-                                    };
-                                    keys.push(createdAtKey);
-                                }
-                                if (this.rawOptions.updatedAt) {
-                                    updatedAtKey = typeof this.rawOptions.updatedAt === 'string' ? this.rawOptions.updatedAt : 'updatedAt';
-                                    this.getRawAttributes[updatedAtKey] = {
-                                        type: 'DATE',
-                                        allowNull: false
-                                    };
-                                    keys.push(updatedAtKey);
-                                }
-                                if (this.rawOptions.deletedAt) {
-                                    deletedAtKey = typeof this.rawOptions.deletedAt === 'string' ? this.rawOptions.deletedAt : 'deletedAt';
-                                    this.getRawAttributes[deletedAtKey] = {
-                                        type: 'DATE'
-                                    };
-                                    keys.push(deletedAtKey);
-                                }
-                            }
+                            keys = Object.keys(this._getRawAttributes);
                             sqlValue = keys.map(function (item) {
-                                var addSql = "".concat(item, " ").concat(_this.getRawAttributes[item].type);
-                                if (_this.getRawAttributes[item].allowNull === false) {
+                                var addSql = "".concat(item, " ").concat(_this._getRawAttributes[item].type);
+                                if (_this._getRawAttributes[item].allowNull === false) {
                                     addSql += ' NOT NULL';
                                 }
-                                if (_this.getRawAttributes[item].primaryKey) {
+                                if (_this._getRawAttributes[item].primaryKey) {
                                     addSql += ' PRIMARY KEY';
                                 }
-                                if (_this.getRawAttributes[item].autoIncrement) {
+                                if (_this._getRawAttributes[item].autoIncrement) {
                                     addSql += " ".concat(autoIncrement[_this.databaseType]);
+                                }
+                                if (_this._getRawAttributes[item].unique) {
+                                    addSql += ' UNIQUE';
+                                }
+                                if (_this._getRawAttributes[item].comment) {
+                                    if (_this.databaseType === 'mysql') {
+                                        addSql += " COMMENT '".concat(_this._getRawAttributes[item].comment, "'");
+                                        // TODO: sqlite, postgres
+                                        // } else if (this.databaseType === 'sqlite') {
+                                        //   addSql += ` -- ${this._getRawAttributes[item].comment}`;
+                                        // } else if (this.databaseType === 'postgres') {
+                                        //   addSql += ` -- ${this._getRawAttributes[item].comment}`;
+                                    }
                                 }
                                 return addSql;
                             });
                             sql = "CREATE TABLE IF NOT EXISTS ".concat(this.modelName, " (\r\n      ").concat(sqlValue.join(', \r\n      '), "\r\n)");
-                            return [4 /*yield*/, this.getDB.execute(sql)];
+                            return [4 /*yield*/, this.getDB.execute(sql).catch(function (error) {
+                                    throw new Error(error);
+                                })];
                         case 3:
                             result = _a.sent();
-                            if (!(this.rawOptions.initialAutoIncrement && this.rawOptions.initialAutoIncrement > 0)) return [3 /*break*/, 7];
-                            if (!(this.databaseType === 'sqlite')) return [3 /*break*/, 5];
-                            return [4 /*yield*/, this.getDB.execute("UPDATE SQLITE_SEQUENCE SET seq = ".concat(this.rawOptions.initialAutoIncrement, " WHERE name = '").concat(this.modelName, "';"))];
-                        case 4:
-                            _a.sent();
-                            return [3 /*break*/, 7];
-                        case 5: return [4 /*yield*/, this.getDB.execute("ALTER TABLE ".concat(this.modelName, " AUTO_INCREMENT = ").concat(this.rawOptions.initialAutoIncrement, ";"))];
-                        case 6:
-                            _a.sent();
-                            _a.label = 7;
-                        case 7: return [2 /*return*/, {
-                                result: result,
-                                modelName: this.modelName
-                            }];
+                            return [2 /*return*/, {
+                                    result: result,
+                                    modelName: this.modelName
+                                }];
                     }
                 });
             });
@@ -245,17 +335,14 @@
          */
         Model.create = function (data) {
             return __awaiter$1(this, void 0, void 0, function () {
-                var _a, keys, values, placeholders, result;
-                return __generator$1(this, function (_b) {
-                    switch (_b.label) {
-                        case 0:
-                            _a = getKeysAndValues(data, this.rawOptions), keys = _a.keys, values = _a.values;
-                            placeholders = Array(keys.length).fill('?').join(', ');
-                            return [4 /*yield*/, this.getDB.execute("INSERT INTO ".concat(this.modelName, " (").concat(keys.join(', '), ") VALUES (").concat(placeholders, ");"), values)];
-                        case 1:
-                            result = _b.sent();
-                            return [2 /*return*/, result];
-                    }
+                var result;
+                return __generator$1(this, function (_a) {
+                    if (!data)
+                        throw new Error('Data is undefined.');
+                    result = this.bulkCreate([data]).catch(function (error) {
+                        throw new Error(error);
+                    });
+                    return [2 /*return*/, result];
                 });
             });
         };
@@ -271,23 +358,52 @@
          */
         Model.bulkCreate = function (data) {
             return __awaiter$1(this, void 0, void 0, function () {
-                var keys, placeholders, values, placeholdersArr, result;
+                var keys, filteredKeys, values, placeholders, placeholdersArr, sql, result;
                 var _this = this;
                 return __generator$1(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            keys = getKeysAndValues(data[0], this.rawOptions).keys;
-                            placeholders = Array(keys.length).fill('?').join(', ');
+                            if (!data)
+                                throw new Error('Data is undefined.');
+                            keys = Object.keys(this._getRawAttributes);
+                            filteredKeys = keys.filter(function (item) { return !_this._getRawAttributes[item].autoIncrement; });
                             values = data
                                 .map(function (record) {
-                                var values = getKeysAndValues(record, _this.rawOptions).values;
-                                return values;
+                                var e_2, _a;
+                                try {
+                                    for (var _b = __values(Object.keys(_this._getRawAttributes)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                                        var key = _c.value;
+                                        // add check for autoIncrement
+                                        if (record[key] === undefined) {
+                                            // if autoIncrement, skip
+                                            if (_this._getRawAttributes[key].autoIncrement)
+                                                continue;
+                                            // if defaultValue not undefined, set default value
+                                            // deletedAt will set to null
+                                            if (_this._getRawAttributes[key].defaultValue !== undefined) {
+                                                record[key] = _this._getRawAttributes[key].defaultValue;
+                                            }
+                                            else if (_this._getRawAttributes[key].allowNull === false) {
+                                                // if allowNull is false, throw error
+                                                throw new Error("Column ".concat(key, " is not allow null."));
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (e_2_1) { e_2 = { error: e_2_1 }; }
+                                finally {
+                                    try {
+                                        if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                                    }
+                                    finally { if (e_2) throw e_2.error; }
+                                }
+                                return Object.values(record);
                             })
                                 .flat();
+                            placeholders = Array(filteredKeys.length).fill('?').join(', ');
                             placeholdersArr = Array(data.length).fill("(".concat(placeholders, ")")).join(', ');
-                            return [4 /*yield*/, this.getDB
-                                    .execute("INSERT INTO ".concat(this.modelName, " (").concat(keys.join(', '), ") VALUES ").concat(placeholdersArr), values)
-                                    .catch(function (error) {
+                            sql = "INSERT INTO ".concat(this.modelName, " (").concat(filteredKeys.join(', '), ") VALUES ").concat(placeholdersArr);
+                            return [4 /*yield*/, this.getDB.execute(sql, values).catch(function (error) {
                                     throw new Error(error);
                                 })];
                         case 1:
@@ -297,64 +413,33 @@
                 });
             });
         };
-        /**
-         * update data to table
-         * @param attributes
-         * @param options
-         * @returns
-         *
-         * @example
-         * ```ts
-         * test.update({ name: 'test' }, { where: { id: 1 } });
-         * ```
-         */
-        Model.update = function (attributes, options) {
+        Model.update = function (data, options) {
             return __awaiter$1(this, void 0, void 0, function () {
-                var keys, values, sql, result;
-                return __generator$1(this, function (_a) {
-                    switch (_a.label) {
+                var _a, where, whereKeys, whereValues, whereSql, keys, values, sql, result;
+                return __generator$1(this, function (_b) {
+                    switch (_b.label) {
                         case 0:
-                            keys = Object.keys(attributes);
-                            values = Object.values(attributes);
-                            sql = "UPDATE ".concat(this.modelName, " SET ");
-                            if (this.databaseType === 'sqlite') {
-                                sql += "".concat(keys.map(function (key) { return "".concat(key, " = ?"); }).join(', '), " WHERE id = ").concat(options.where.id);
+                            if (!data)
+                                throw new Error('Data is undefined.');
+                            _a = (options || {}).where, where = _a === void 0 ? {} : _a;
+                            whereKeys = Object.keys(where);
+                            whereValues = Object.values(where);
+                            whereSql = whereKeys.length
+                                ? " WHERE ".concat(whereKeys.map(function (item) { return "".concat(item, " = ?"); }).join(' AND '))
+                                : '';
+                            if (this._getRawAttributes.updatedAt) {
+                                data.updatedAt = this._getTimezoneDate;
                             }
-                            else if (this.databaseType === 'mysql') {
-                                sql += "SET ".concat(keys.map(function (key) { return "`".concat(key, "` = ?"); }).join(', '), " WHERE `id` = ").concat(options.where.id);
-                            }
-                            else if (this.databaseType === 'postgres') {
-                                sql += "SET ".concat(keys.map(function (key) { return "\"".concat(key, "\" = ?"); }).join(', '), " WHERE \"id\" = ").concat(options.where.id);
-                            }
-                            return [4 /*yield*/, this.getDB.execute(sql, values)];
+                            keys = Object.keys(data);
+                            values = Object.values(data);
+                            sql = "UPDATE ".concat(this.modelName, " SET ").concat(keys
+                                .map(function (item) { return "".concat(item, " = ?"); })
+                                .join(', ')).concat(whereSql);
+                            return [4 /*yield*/, this.getDB.execute(sql, __spreadArray(__spreadArray([], __read(values), false), __read(whereValues), false)).catch(function (error) {
+                                    throw new Error(error);
+                                })];
                         case 1:
-                            result = _a.sent();
-                            return [2 /*return*/, result];
-                    }
-                });
-            });
-        };
-        /**
-         * destroy data to table
-         * @param options
-         * @returns
-         *
-         * @example
-         * ```ts
-         * test.destroy({ where: { id: 1 } });
-         * ```
-         */
-        Model.destroy = function (options) {
-            return __awaiter$1(this, void 0, void 0, function () {
-                var keys, values, result;
-                return __generator$1(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            keys = Object.keys(options);
-                            values = Object.values(options);
-                            return [4 /*yield*/, this.getDB.execute("DELETE FROM ".concat(this.modelName, " WHERE ").concat(keys.map(function (key) { return "".concat(key, " = ?"); }).join(' AND '), " LIMIT 1"), values)];
-                        case 1:
-                            result = _a.sent();
+                            result = _b.sent();
                             return [2 /*return*/, result];
                     }
                 });
@@ -372,16 +457,28 @@
          */
         Model.findOne = function (options) {
             return __awaiter$1(this, void 0, void 0, function () {
-                var keys, values, result;
-                return __generator$1(this, function (_a) {
-                    switch (_a.label) {
+                var _a, where, whereKeys, whereValues, whereSql, paranoidSql, sql, result;
+                return __generator$1(this, function (_b) {
+                    switch (_b.label) {
                         case 0:
-                            keys = Object.keys(options);
-                            values = Object.values(options);
-                            return [4 /*yield*/, this.getDB.select("SELECT * FROM ".concat(this.modelName, " WHERE ").concat(keys.map(function (key) { return "".concat(key, " = ?"); }).join(' AND '), " LIMIT 1"), values)];
+                            _a = (options || {}).where, where = _a === void 0 ? {} : _a;
+                            whereKeys = Object.keys(where);
+                            whereValues = Object.values(where);
+                            whereSql = whereKeys.length
+                                ? " WHERE ".concat(whereKeys.map(function (item) { return "".concat(item, " = ?"); }).join(' AND '))
+                                : ' WHERE 1=1';
+                            paranoidSql = this._getRawAttributes.deletedAt
+                                ? " AND ".concat(this._getRawOptions.deletedAt, " IS NULL")
+                                : '';
+                            sql = "SELECT * FROM ".concat(this.modelName).concat(whereSql).concat(paranoidSql, " LIMIT 1");
+                            return [4 /*yield*/, this.getDB.select(sql, whereValues).catch(function (error) {
+                                    throw new Error(error);
+                                })];
                         case 1:
-                            result = _a.sent();
-                            return [2 /*return*/, result];
+                            result = _b.sent();
+                            if (result.length)
+                                return [2 /*return*/, result[0]];
+                            return [2 /*return*/, null];
                     }
                 });
             });
@@ -394,96 +491,110 @@
          * @example
          * ```ts
          * test.findAll({
-         *  where: { id: 1 },
-         *  limit: 10,
-         *  offset: 0,
-         *  order: ['id', 'DESC']
+         *   where: {
+         *     id: 1
+         *   },
+         *   limit: 10,
+         *   offset: 0,
+         *   order: ['id', 'DESC']
          * });
          * ```
          */
         Model.findAll = function (options) {
-            if (options === void 0) { options = {}; }
             return __awaiter$1(this, void 0, void 0, function () {
-                var _a, where, _b, limit, _c, offset, _d, order, keys, values, sql, result;
-                return __generator$1(this, function (_e) {
-                    switch (_e.label) {
+                var _a, _b, where, limit, offset, order, whereKeys, whereValues, paranoidSql, whereSql, orderSql, limitSql, offsetSql, sql, result;
+                return __generator$1(this, function (_c) {
+                    switch (_c.label) {
                         case 0:
-                            _a = options.where, where = _a === void 0 ? {} : _a, _b = options.limit, limit = _b === void 0 ? 0 : _b, _c = options.offset, offset = _c === void 0 ? 0 : _c, _d = options.order, order = _d === void 0 ? [] : _d;
-                            keys = Object.keys(where);
-                            values = Object.values(where);
-                            sql = "SELECT * FROM ".concat(this.modelName);
-                            if (keys.length) {
-                                sql += " WHERE ".concat(keys.map(function (key) { return "".concat(key, " = ?"); }).join(' AND '));
+                            _a = options || {}, _b = _a.where, where = _b === void 0 ? {} : _b, limit = _a.limit, offset = _a.offset, order = _a.order;
+                            whereKeys = Object.keys(where);
+                            whereValues = Object.values(where);
+                            paranoidSql = '';
+                            if ((options === null || options === void 0 ? void 0 : options.paranoid) === false || (options === null || options === void 0 ? void 0 : options.paranoid) === undefined) {
+                                paranoidSql = this._getRawOptions.deletedAt
+                                    ? " AND ".concat(this._getRawOptions.deletedAt, " IS NULL")
+                                    : '';
                             }
-                            if (order && order.length) {
-                                sql += " ORDER BY ".concat(order[0], " ").concat(order[1]);
-                            }
-                            if (limit) {
-                                sql += " LIMIT ".concat(limit);
-                            }
-                            if (offset) {
-                                sql += " OFFSET ".concat(offset);
-                            }
-                            return [4 /*yield*/, this.getDB.select(sql, values).catch(function (error) {
+                            whereSql = whereKeys.length
+                                ? " WHERE ".concat(whereKeys.map(function (item) { return "".concat(item, " = ?"); }).join(' AND '))
+                                : ' WHERE 1=1';
+                            orderSql = order ? " ORDER BY ".concat(order) : '';
+                            limitSql = limit ? " LIMIT ".concat(limit) : '';
+                            offsetSql = offset ? " OFFSET ".concat(offset) : '';
+                            sql = "SELECT * FROM ".concat(this.modelName).concat(whereSql).concat(paranoidSql).concat(orderSql).concat(limitSql).concat(offsetSql);
+                            return [4 /*yield*/, this.getDB.select(sql, whereValues).catch(function (error) {
                                     throw new Error(error);
                                 })];
                         case 1:
-                            result = _e.sent();
+                            result = _c.sent();
                             return [2 /*return*/, result];
                     }
                 });
             });
         };
         /**
-         * execute sql
-         * @param sql
-         * @param value
+         * if model has deletedAt, will update deletedAt
+         * if model not has deletedAt or force is true, will delete data
+         * @param options
          * @returns
          *
          * @example
          * ```ts
-         * test.execute('SELECT * FROM test');
+         * test.destroy({ where: { id: 1 } });
          * ```
          */
-        Model.execute = function (sql, value) {
+        Model.destroy = function (options) {
             return __awaiter$1(this, void 0, void 0, function () {
-                return __generator$1(this, function (_a) {
-                    switch (_a.label) {
+                var _a, where, whereKeys, whereValues, whereSql, sql, result;
+                return __generator$1(this, function (_b) {
+                    switch (_b.label) {
                         case 0:
-                            if (!value) {
-                                return [2 /*return*/, this.getDB.execute(sql)];
+                            _a = (options || {}).where, where = _a === void 0 ? {} : _a;
+                            whereKeys = Object.keys(where);
+                            whereValues = Object.values(where);
+                            whereSql = whereKeys.length
+                                ? " WHERE ".concat(whereKeys.map(function (item) { return "".concat(item, " = ?"); }).join(' AND '))
+                                : '';
+                            sql = '';
+                            if ((options === null || options === void 0 ? void 0 : options.force) || !this._getRawOptions.deletedAt) {
+                                sql = "DELETE FROM ".concat(this.modelName).concat(whereSql);
                             }
-                            return [4 /*yield*/, this.getDB.execute(sql, value)];
+                            else if (this._getRawOptions.deletedAt) {
+                                sql = "UPDATE ".concat(this.modelName, " SET ").concat(this._getRawOptions.deletedAt, " = '").concat(this._getTimezoneDate, "'").concat(whereSql);
+                            }
+                            return [4 /*yield*/, this.getDB.execute(sql, whereValues).catch(function (error) {
+                                    throw new Error(error);
+                                })];
                         case 1:
-                            _a.sent();
-                            return [2 /*return*/];
+                            result = _b.sent();
+                            return [2 /*return*/, result];
                     }
                 });
             });
         };
-        /**
-         * select sql
-         * @param sql
-         * @param value
-         * @returns
-         *
-         * @example
-         * ```ts
-         * test.select('SELECT * FROM test');
-         * ```
-         */
-        Model.select = function (sql, value) {
+        /** if model has deletedAt, will restore data */
+        Model.restore = function (options) {
             return __awaiter$1(this, void 0, void 0, function () {
+                var keys, values, sql, result;
                 return __generator$1(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            if (!value) {
-                                return [2 /*return*/, this.getDB.select(sql)];
+                            if (!options || !options.where) {
+                                throw new Error('options.where is required');
                             }
-                            return [4 /*yield*/, this.getDB.select(sql, value)];
+                            keys = Object.keys(options.where);
+                            values = Object.values(options.where);
+                            // if model not has deletedAt, throw error
+                            if (!this._getRawOptions.deletedAt) {
+                                throw new Error("".concat(this.modelName, " not has deletedAt"));
+                            }
+                            sql = "UPDATE ".concat(this.modelName, " SET ").concat(this._getRawOptions.deletedAt, " = NULL, ").concat(this._getRawOptions.updatedAt, " = '").concat(this._getTimezoneDate, "' WHERE ").concat(keys.map(function (key) { return "".concat(key, " = ?"); }).join(' AND '));
+                            return [4 /*yield*/, this.getDB.execute(sql, values).catch(function (error) {
+                                    throw new Error(error);
+                                })];
                         case 1:
-                            _a.sent();
-                            return [2 /*return*/];
+                            result = _a.sent();
+                            return [2 /*return*/, result];
                     }
                 });
             });
@@ -496,14 +607,70 @@
             return __awaiter$1(this, void 0, void 0, function () {
                 return __generator$1(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4 /*yield*/, this.getDB.execute("DROP TABLE IF EXISTS ".concat(this.modelName))];
+                        case 0: return [4 /*yield*/, this.getDB.execute("DROP TABLE IF EXISTS ".concat(this.modelName)).catch(function (error) {
+                                throw new Error(error);
+                            })];
                         case 1: return [2 /*return*/, _a.sent()];
                     }
                 });
             });
         };
+        Model._modelPrimaryKey = null;
         return Model;
     }());
+    /** find primary key */
+    function findPrimaryKey(attributes) {
+        var e_3, _a;
+        if (!attributes)
+            throw new Error('attributes is required');
+        var keys = Object.keys(attributes);
+        try {
+            for (var keys_1 = __values(keys), keys_1_1 = keys_1.next(); !keys_1_1.done; keys_1_1 = keys_1.next()) {
+                var key = keys_1_1.value;
+                if (attributes[key].primaryKey)
+                    return key;
+            }
+        }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        finally {
+            try {
+                if (keys_1_1 && !keys_1_1.done && (_a = keys_1.return)) _a.call(keys_1);
+            }
+            finally { if (e_3) throw e_3.error; }
+        }
+    }
+    /** get timestamp properties */
+    function accessTimestamps(options) {
+        var e_4, _a;
+        var timestampsProperties = {};
+        if (options.timestamps) {
+            var timestampKeys = ['createdAt', 'updatedAt', 'deletedAt'];
+            try {
+                for (var timestampKeys_1 = __values(timestampKeys), timestampKeys_1_1 = timestampKeys_1.next(); !timestampKeys_1_1.done; timestampKeys_1_1 = timestampKeys_1.next()) {
+                    var key = timestampKeys_1_1.value;
+                    var timestampKey = typeof options[key] === 'string' ? options[key] : key;
+                    if (options[key] === false)
+                        continue;
+                    timestampsProperties[key] = {
+                        key: timestampKey,
+                        type: 'DATE',
+                        properties: {
+                            type: 'DATE',
+                            defaultValue: key === 'deletedAt' ? null : getLocalTime(options.timezone)
+                        }
+                    };
+                }
+            }
+            catch (e_4_1) { e_4 = { error: e_4_1 }; }
+            finally {
+                try {
+                    if (timestampKeys_1_1 && !timestampKeys_1_1.done && (_a = timestampKeys_1.return)) _a.call(timestampKeys_1);
+                }
+                finally { if (e_4) throw e_4.error; }
+            }
+        }
+        return timestampsProperties;
+    }
 
     var __extends = (undefined && undefined.__extends) || (function () {
         var extendStatics = function (d, b) {
@@ -558,21 +725,26 @@
     };
     var SqlORM = /** @class */ (function () {
         /**
-         * ### SQL ORM
+         * #### SQL ORM
          *
          * The path is relative to `tauri::api::path::BaseDirectory::App`
          *
          * and must start with `sqlite:` or `mysql:` or `postgres:`
          *
          * @class SqlORM
-         * @example const test = new SqlORM('sqlite:test.db');
+         * @example
+         *
+         * ``` ts
+         * const sqlite = new SqlORM('sqlite:test.db');
+         * const mysql = new SqlORM('mysql://root:root@localhost/database');
+         * const postgres = new SqlORM('postgres://postgres:root@localhost:5432/postgres');
+         * ```
          */
         function SqlORM(path) {
-            /** 数据库实例 */
+            /** database instance */
             this.db = null;
-            /** 数据库路径 */
+            /** database path */
             this.path = '';
-            this.databaseType = '';
             this.path = path;
             this.databaseType = path.split(':')[0];
             this.connect();
@@ -585,7 +757,7 @@
             configurable: true
         });
         /**
-         * ### Define a model
+         * #### Define a model
          * @param modelName
          * @param attributes
          * @param options
@@ -626,12 +798,13 @@
                                 }
                                 return model;
                             }(Model));
-                            model.init(modelName, attributes, options);
+                            model._init(modelName, attributes, options);
                             return [2 /*return*/, model];
                     }
                 });
             });
         };
+        /** Connect to the database */
         SqlORM.prototype.connect = function (callback) {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
@@ -652,13 +825,7 @@
                 });
             });
         };
-        /**
-         * ### Close the database
-         * @example
-         * ``` ts
-         * test.close();
-         * ```
-         */
+        /** Close the database */
         SqlORM.prototype.close = function () {
             var _a;
             return __awaiter(this, void 0, void 0, function () {

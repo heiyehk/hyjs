@@ -1,40 +1,19 @@
 import SqlDatabase from 'tauri-plugin-sql-api';
-export declare type DatabaseType = 'sqlite' | 'mysql' | 'postgres';
-export interface ModelOptions {
-    createdAt?: boolean | string;
-    updatedAt?: boolean | string;
-    deletedAt?: boolean | string;
-    timestamps?: boolean;
-    initialAutoIncrement?: number;
-}
-export interface FindOptions {
-    where?: Record<string, any>;
-    limit?: number;
-    offset?: number;
-    order?: [string, 'ASC' | 'DESC' | 'asc' | 'desc'];
-}
-export declare const getKeysAndValues: (obj: Record<string, any>, options: Model['rawOptions']) => {
-    keys: string[];
-    values: any[];
-};
+import { DatabaseType, DestroyOptions, FindAllOptions, FindOptionsWhere, ModelAttributes, ModelDefineOptions, ModelOptions, RestoreOptions } from './type';
 export default class Model {
-    [x: string]: any;
     static db: SqlDatabase;
     static rawAttributes: Record<string, any>;
+    static rawOptions: ModelOptions;
     static modelName: string;
+    static _modelPrimaryKey?: string | null;
     static databaseType: DatabaseType;
-    static rawOptions: Record<string, any> & ModelOptions;
     static get getDB(): SqlDatabase;
-    static get getRawAttributes(): Record<string, any>;
-    static get getDBPath(): string;
-    /**
-     * init model
-     * @param modelName
-     * @param attributes
-     * @param options
-     * @returns
-     */
-    static init(modelName: string, attributes?: Record<string, any>, options?: Record<string, any> & ModelOptions): Promise<typeof Model>;
+    static get _getRawAttributes(): Record<string, any>;
+    static get _getRawOptions(): ModelOptions;
+    static get _getTimezoneDate(): string;
+    static _init(modelName: string, attributes: ModelAttributes, options: ModelDefineOptions): typeof Model;
+    static _setRawOptions(options: ModelDefineOptions): Promise<void>;
+    static _setTimestampsAttributes(attributes: ModelAttributes): Promise<void>;
     /**
      * sync table
      *
@@ -80,29 +59,7 @@ export default class Model {
      * ```
      */
     static bulkCreate(data: Record<string, any>[]): Promise<import("tauri-plugin-sql-api").QueryResult>;
-    /**
-     * update data to table
-     * @param attributes
-     * @param options
-     * @returns
-     *
-     * @example
-     * ```ts
-     * test.update({ name: 'test' }, { where: { id: 1 } });
-     * ```
-     */
-    static update(attributes: Record<string, any>, options: Record<string, any>): Promise<import("tauri-plugin-sql-api").QueryResult>;
-    /**
-     * destroy data to table
-     * @param options
-     * @returns
-     *
-     * @example
-     * ```ts
-     * test.destroy({ where: { id: 1 } });
-     * ```
-     */
-    static destroy(options: Record<string, any>): Promise<import("tauri-plugin-sql-api").QueryResult>;
+    static update(data: Record<string, any>, options?: FindOptionsWhere): Promise<import("tauri-plugin-sql-api").QueryResult>;
     /**
      * find one data to table
      * @param options
@@ -113,7 +70,7 @@ export default class Model {
      * test.findOne({ where: { id: 1 } });
      * ```
      */
-    static findOne(options: Record<string, any>): Promise<unknown>;
+    static findOne(options?: FindOptionsWhere): Promise<any>;
     /**
      * find all data to table
      * @param options
@@ -122,38 +79,30 @@ export default class Model {
      * @example
      * ```ts
      * test.findAll({
-     *  where: { id: 1 },
-     *  limit: 10,
-     *  offset: 0,
-     *  order: ['id', 'DESC']
+     *   where: {
+     *     id: 1
+     *   },
+     *   limit: 10,
+     *   offset: 0,
+     *   order: ['id', 'DESC']
      * });
      * ```
      */
-    static findAll(options?: FindOptions): Promise<unknown>;
+    static findAll(options?: FindAllOptions): Promise<unknown>;
     /**
-     * execute sql
-     * @param sql
-     * @param value
+     * if model has deletedAt, will update deletedAt
+     * if model not has deletedAt or force is true, will delete data
+     * @param options
      * @returns
      *
      * @example
      * ```ts
-     * test.execute('SELECT * FROM test');
+     * test.destroy({ where: { id: 1 } });
      * ```
      */
-    static execute(sql: string, value?: any[]): Promise<import("tauri-plugin-sql-api").QueryResult | undefined>;
-    /**
-     * select sql
-     * @param sql
-     * @param value
-     * @returns
-     *
-     * @example
-     * ```ts
-     * test.select('SELECT * FROM test');
-     * ```
-     */
-    static select(sql: string, value?: any[]): Promise<unknown>;
+    static destroy(options?: DestroyOptions): Promise<import("tauri-plugin-sql-api").QueryResult>;
+    /** if model has deletedAt, will restore data */
+    static restore(options: RestoreOptions): Promise<import("tauri-plugin-sql-api").QueryResult>;
     /**
      * drop table
      * @returns

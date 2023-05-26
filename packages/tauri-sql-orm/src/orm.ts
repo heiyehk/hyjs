@@ -1,31 +1,38 @@
 import SqlDatabase from 'tauri-plugin-sql-api';
 
-import Model, { DatabaseType, ModelOptions } from './model';
+import Model from './model';
+import type { DatabaseType, ModelAttributes, ModelDefineOptions } from './type';
 
 export type DatabasePath = `${'sqlite' | 'mysql' | 'postgres'}:${string}`;
 
 export default class SqlORM {
-  /** 数据库实例 */
+  /** database instance */
   private db: Promise<SqlDatabase> | null = null;
 
-  /** 数据库路径 */
+  /** database path */
   private path = '';
 
-  private databaseType: DatabaseType | '' = '';
+  private databaseType: DatabaseType;
 
   /**
-   * ### SQL ORM
+   * #### SQL ORM
    *
    * The path is relative to `tauri::api::path::BaseDirectory::App`
    *
    * and must start with `sqlite:` or `mysql:` or `postgres:`
    *
    * @class SqlORM
-   * @example const test = new SqlORM('sqlite:test.db');
+   * @example
+   *
+   * ``` ts
+   * const sqlite = new SqlORM('sqlite:test.db');
+   * const mysql = new SqlORM('mysql://root:root@localhost/database');
+   * const postgres = new SqlORM('postgres://postgres:root@localhost:5432/postgres');
+   * ```
    */
   constructor(path: DatabasePath) {
     this.path = path;
-    this.databaseType = path.split(':')[0] as 'sqlite' | 'mysql' | 'postgres' | '';
+    this.databaseType = path.split(':')[0] as 'sqlite' | 'mysql' | 'postgres';
     this.connect();
   }
 
@@ -34,7 +41,7 @@ export default class SqlORM {
   }
 
   /**
-   * ### Define a model
+   * #### Define a model
    * @param modelName
    * @param attributes
    * @param options
@@ -56,19 +63,21 @@ export default class SqlORM {
    */
   public async define(
     modelName: string,
-    attributes: Record<string, any> = {},
-    options: Record<string, any> & ModelOptions = {}
+    attributes: ModelAttributes = {},
+    options: ModelDefineOptions = {}
   ) {
     options.modelName = modelName;
     options.db = await this.getDB;
     options.databaseType = this.databaseType;
 
+    // eslint-disable-next-line prettier/prettier
     const model = class extends Model { };
-    model.init(modelName, attributes, options);
+    model._init(modelName, attributes, options);
 
     return model;
   }
 
+  /** Connect to the database */
   public async connect(callback?: () => void) {
     if (!this.path) throw new Error('Database path is not defined.');
     this.db = SqlDatabase.load(this.path).catch((error) => {
@@ -78,13 +87,7 @@ export default class SqlORM {
     if (callback && typeof callback === 'function') callback();
   }
 
-  /**
-   * ### Close the database
-   * @example
-   * ``` ts
-   * test.close();
-   * ```
-   */
+  /** Close the database */
   public async close() {
     (await this.db)?.close();
     this.db = null;

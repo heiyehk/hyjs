@@ -1,92 +1,105 @@
+/* eslint-disable prettier/prettier */
 import SqlDatabase from 'tauri-plugin-sql-api';
 
-export type DatabaseType = 'sqlite' | 'mysql' | 'postgres';
+import {
+  DatabaseType,
+  DestroyOptions,
+  FindAllOptions,
+  FindOptionsWhere,
+  ModelAttributes,
+  ModelAttributesProperties,
+  ModelDefineOptions,
+  ModelOptions,
+  RestoreOptions,
+  TimestampsProperties,
+  TimestampsTypeAndProperties
+} from './type';
+import { getLocalTime } from './utils';
 
-export interface ModelOptions {
-  createdAt?: boolean | string;
-  updatedAt?: boolean | string;
-  deletedAt?: boolean | string;
-  timestamps?: boolean;
-  initialAutoIncrement?: number;
-}
-
-export interface FindOptions {
-  where?: Record<string, any>;
-  limit?: number;
-  offset?: number;
-  order?: [string, 'ASC' | 'DESC' | 'asc' | 'desc'];
-}
-
+/** database auto increment */
 const autoIncrement = {
   sqlite: 'AUTOINCREMENT',
   mysql: 'AUTO_INCREMENT',
   postgres: 'SERIAL'
 };
 
-export const getKeysAndValues = (obj: Record<string, any>, options: Model['rawOptions']) => {
-  const keys = Object.keys(obj);
-  const values = Object.values(obj);
-
-  if (options.timestamps) {
-    if (options.createdAt) {
-      const createdAtKey = typeof options.createdAt === 'string' ? options.createdAt : 'createdAt';
-      keys.push(createdAtKey);
-      values.push(new Date().toISOString());
-    }
-    if (options.updatedAt) {
-      const updatedAtKey = typeof options.updatedAt === 'string' ? options.updatedAt : 'updatedAt';
-      keys.push(updatedAtKey);
-      values.push(new Date().toISOString());
-    }
-    if (options.deletedAt) {
-      const deletedAtKey = typeof options.deletedAt === 'string' ? options.deletedAt : 'deletedAt';
-      keys.push(deletedAtKey);
-      values.push(null);
-    }
-  }
-  return { keys, values };
-};
-
 export default class Model {
-  [x: string]: any;
-
   static db: SqlDatabase;
   static rawAttributes: Record<string, any>;
+  static rawOptions: ModelOptions;
   static modelName: string;
+  static _modelPrimaryKey?: string | null = null;
   static databaseType: DatabaseType;
-  static rawOptions: Record<string, any> & ModelOptions;
 
   static get getDB(): SqlDatabase {
     return this.db;
   }
 
-  static get getRawAttributes(): Record<string, any> {
+  static get _getRawAttributes() {
     return this.rawAttributes;
   }
 
-  static get getDBPath(): string {
-    return this.db.path;
+  static get _getRawOptions(): ModelOptions {
+    return this.rawOptions;
   }
 
-  /**
-   * init model
-   * @param modelName
-   * @param attributes
-   * @param options
-   * @returns
-   */
-  static async init(
-    modelName: string,
-    attributes: Record<string, any> = {},
-    options: Record<string, any> & ModelOptions = {}
-  ) {
-    this.db = await options.db;
+  static get _getTimezoneDate(): string {
+    return getLocalTime(this._getRawOptions.timezone);
+  }
+
+  static _init(modelName: string, attributes: ModelAttributes, options: ModelDefineOptions) {
+    this._modelPrimaryKey = findPrimaryKey(attributes);
+    this.db = options.db as SqlDatabase;
     this.modelName = modelName;
-    this.rawAttributes = attributes;
-    this.databaseType = options.databaseType;
-    this.rawOptions = options;
+    this._setRawOptions(options);
+    this._setTimestampsAttributes(attributes);
 
     return this;
+  }
+
+  static async _setRawOptions(options: ModelDefineOptions) {
+    const rawOptions = { ...options };
+    if (rawOptions.timestamps) {
+      if (rawOptions.createdAt === false) {
+        rawOptions.createdAt = false;
+      } else {
+        rawOptions.createdAt =
+          rawOptions.createdAt === undefined ? 'createdAt' : rawOptions.createdAt;
+      }
+      if (rawOptions.updatedAt === false) {
+        rawOptions.updatedAt = false;
+      } else {
+        rawOptions.updatedAt =
+          rawOptions.updatedAt === undefined ? 'updatedAt' : rawOptions.updatedAt;
+      }
+      if (rawOptions.deletedAt === false) {
+        rawOptions.deletedAt = false;
+      } else {
+        rawOptions.deletedAt =
+          rawOptions.deletedAt === undefined ? 'deletedAt' : rawOptions.deletedAt;
+      }
+    } else {
+      rawOptions.createdAt = false;
+      rawOptions.updatedAt = false;
+      rawOptions.deletedAt = false;
+    }
+    this.rawOptions = rawOptions;
+    this.databaseType = rawOptions.databaseType as DatabaseType;
+  }
+
+  static async _setTimestampsAttributes(attributes: ModelAttributes) {
+    const rawAttributes = { ...attributes };
+    const timestampsAttr = accessTimestamps(this._getRawOptions);
+    if (Object.keys.length) {
+      for (const key of Object.keys(timestampsAttr)) {
+        rawAttributes[timestampsAttr[key].key] = timestampsAttr[key].properties;
+      }
+    }
+
+    this.rawAttributes = rawAttributes as Record<
+      keyof typeof attributes,
+      ModelAttributesProperties
+    >;
   }
 
   /**
@@ -107,76 +120,54 @@ export default class Model {
    * ```
    */
   static async sync(options?: { force?: boolean }) {
-    if (!this.getRawAttributes) throw new Error('Model not initialized, attributes is undefined.');
+    if (!this._getRawAttributes) throw new Error('Model not initialized, attributes is undefined.');
     if (options && options.force) {
       await this.drop();
     }
-    const keys = Object.keys(this.getRawAttributes);
 
-    if (this.rawOptions.timestamps) {
-      if (this.rawOptions.createdAt) {
-        const createdAtKey = typeof this.rawOptions.createdAt === 'string' ? this.rawOptions.createdAt : 'createdAt';
-        this.getRawAttributes[createdAtKey] = {
-          type: 'DATE',
-          allowNull: false
-        };
-        keys.push(createdAtKey);
-      }
-
-      if (this.rawOptions.updatedAt) {
-        const updatedAtKey = typeof this.rawOptions.updatedAt === 'string' ? this.rawOptions.updatedAt : 'updatedAt';
-        this.getRawAttributes[updatedAtKey] = {
-          type: 'DATE',
-          allowNull: false
-        };
-        keys.push(updatedAtKey);
-      }
-
-      if (this.rawOptions.deletedAt) {
-        const deletedAtKey = typeof this.rawOptions.deletedAt === 'string' ? this.rawOptions.deletedAt : 'deletedAt';
-        this.getRawAttributes[deletedAtKey] = {
-          type: 'DATE'
-        };
-        keys.push(deletedAtKey);
-      }
-    }
+    const keys = Object.keys(this._getRawAttributes);
 
     const sqlValue = keys.map((item) => {
-      let addSql = `${item} ${this.getRawAttributes[item].type}`;
-      if (this.getRawAttributes[item].allowNull === false) {
+      let addSql = `${item} ${this._getRawAttributes[item].type}`;
+      if (this._getRawAttributes[item].allowNull === false) {
         addSql += ' NOT NULL';
       }
-      if (this.getRawAttributes[item].primaryKey) {
+      if (this._getRawAttributes[item].primaryKey) {
         addSql += ' PRIMARY KEY';
       }
-      if (this.getRawAttributes[item].autoIncrement) {
+      if (this._getRawAttributes[item].autoIncrement) {
         addSql += ` ${autoIncrement[this.databaseType]}`;
+      }
+      if (this._getRawAttributes[item].unique) {
+        addSql += ' UNIQUE';
+      }
+
+      if (this._getRawAttributes[item].comment) {
+        if (this.databaseType === 'mysql') {
+          addSql += ` COMMENT '${this._getRawAttributes[item].comment}'`;
+          // TODO: sqlite, postgres
+          // } else if (this.databaseType === 'sqlite') {
+          //   addSql += ` -- ${this._getRawAttributes[item].comment}`;
+          // } else if (this.databaseType === 'postgres') {
+          //   addSql += ` -- ${this._getRawAttributes[item].comment}`;
+        }
       }
 
       return addSql;
     });
-    const sql = `CREATE TABLE IF NOT EXISTS ${this.modelName} (\r\n      ${sqlValue.join(', \r\n      ')}\r\n)`;
 
-    const result = await this.getDB.execute(sql);
-
-    if (this.rawOptions.initialAutoIncrement && this.rawOptions.initialAutoIncrement > 0) {
-      if (this.databaseType === 'sqlite') {
-        await this.getDB.execute(
-          `UPDATE SQLITE_SEQUENCE SET seq = ${this.rawOptions.initialAutoIncrement} WHERE name = '${this.modelName}';`
-        );
-      } else {
-        await this.getDB.execute(
-          `ALTER TABLE ${this.modelName} AUTO_INCREMENT = ${this.rawOptions.initialAutoIncrement};`
-        );
-      }
-    }
+    const sql = `CREATE TABLE IF NOT EXISTS ${this.modelName} (\r\n      ${sqlValue.join(
+      ', \r\n      '
+    )}\r\n)`;
+    const result = await this.getDB.execute(sql).catch((error) => {
+      throw new Error(error);
+    });
 
     return {
       result,
       modelName: this.modelName
     };
   }
-
   /**
    * create data to table
    * @param data
@@ -188,13 +179,10 @@ export default class Model {
    * ```
    */
   static async create(data: Record<string, any>) {
-    const { keys, values } = getKeysAndValues(data, this.rawOptions);
-    const placeholders = Array(keys.length).fill('?').join(', ');
-
-    const result = await this.getDB.execute(
-      `INSERT INTO ${this.modelName} (${keys.join(', ')}) VALUES (${placeholders});`,
-      values
-    );
+    if (!data) throw new Error('Data is undefined.');
+    const result = this.bulkCreate([data]).catch((error) => {
+      throw new Error(error);
+    });
 
     return result;
   }
@@ -210,72 +198,68 @@ export default class Model {
    * ```
    */
   static async bulkCreate(data: Record<string, any>[]) {
-    const { keys } = getKeysAndValues(data[0], this.rawOptions);
-    const placeholders = Array(keys.length).fill('?').join(', ');
-
+    if (!data) throw new Error('Data is undefined.');
+    const keys = Object.keys(this._getRawAttributes);
+    const filteredKeys = keys.filter((item) => !this._getRawAttributes[item].autoIncrement);
     const values = data
       .map((record) => {
-        const { values } = getKeysAndValues(record, this.rawOptions);
-        return values;
+        for (const key of Object.keys(this._getRawAttributes)) {
+          // add check for autoIncrement
+          if (record[key] === undefined) {
+            // if autoIncrement, skip
+            if (this._getRawAttributes[key].autoIncrement) continue;
+            // if defaultValue not undefined, set default value
+            // deletedAt will set to null
+            if (this._getRawAttributes[key].defaultValue !== undefined) {
+              record[key] = this._getRawAttributes[key].defaultValue;
+            } else if (this._getRawAttributes[key].allowNull === false) {
+              // if allowNull is false, throw error
+              throw new Error(`Column ${key} is not allow null.`);
+            }
+          }
+        }
+
+        return Object.values(record);
       })
       .flat();
+
+    const placeholders = Array(filteredKeys.length).fill('?').join(', ');
     const placeholdersArr = Array(data.length).fill(`(${placeholders})`).join(', ');
 
-    const result = await this.getDB
-      .execute(`INSERT INTO ${this.modelName} (${keys.join(', ')}) VALUES ${placeholdersArr}`, values)
-      .catch((error) => {
-        throw new Error(error);
-      });
+    // INSERT INTO mytable (column1, column2)
+    // SELECT value1, value2
+    // UNION ALL SELECT value3, value4
+    // UNION ALL SELECT value5, value6
+    // ...
+    const sql = `INSERT INTO ${this.modelName} (${filteredKeys.join(
+      ', '
+    )}) VALUES ${placeholdersArr}`;
+    const result = await this.getDB.execute(sql, values).catch((error) => {
+      throw new Error(error);
+    });
 
     return result;
   }
 
-  /**
-   * update data to table
-   * @param attributes
-   * @param options
-   * @returns
-   *
-   * @example
-   * ```ts
-   * test.update({ name: 'test' }, { where: { id: 1 } });
-   * ```
-   */
-  static async update(attributes: Record<string, any>, options: Record<string, any>) {
-    const keys = Object.keys(attributes);
-    const values = Object.values(attributes);
-
-    let sql = `UPDATE ${this.modelName} SET `;
-    if (this.databaseType === 'sqlite') {
-      sql += `${keys.map((key) => `${key} = ?`).join(', ')} WHERE id = ${options.where.id}`;
-    } else if (this.databaseType === 'mysql') {
-      sql += `SET ${keys.map((key) => `\`${key}\` = ?`).join(', ')} WHERE \`id\` = ${options.where.id}`;
-    } else if (this.databaseType === 'postgres') {
-      sql += `SET ${keys.map((key) => `"${key}" = ?`).join(', ')} WHERE "id" = ${options.where.id}`;
+  static async update(data: Record<string, any>, options?: FindOptionsWhere) {
+    if (!data) throw new Error('Data is undefined.');
+    const { where = {} } = options || {};
+    const whereKeys = Object.keys(where);
+    const whereValues = Object.values(where);
+    const whereSql = whereKeys.length
+      ? ` WHERE ${whereKeys.map((item) => `${item} = ?`).join(' AND ')}`
+      : '';
+    if (this._getRawAttributes.updatedAt) {
+      data.updatedAt = this._getTimezoneDate;
     }
-
-    const result = await this.getDB.execute(sql, values);
-    return result;
-  }
-
-  /**
-   * destroy data to table
-   * @param options
-   * @returns
-   *
-   * @example
-   * ```ts
-   * test.destroy({ where: { id: 1 } });
-   * ```
-   */
-  static async destroy(options: Record<string, any>) {
-    const keys = Object.keys(options);
-    const values = Object.values(options);
-
-    const result = await this.getDB.execute(
-      `DELETE FROM ${this.modelName} WHERE ${keys.map((key) => `${key} = ?`).join(' AND ')} LIMIT 1`,
-      values
-    );
+    const keys = Object.keys(data);
+    const values = Object.values(data);
+    const sql = `UPDATE ${this.modelName} SET ${keys
+      .map((item) => `${item} = ?`)
+      .join(', ')}${whereSql}`;
+    const result = await this.getDB.execute(sql, [...values, ...whereValues]).catch((error) => {
+      throw new Error(error);
+    });
 
     return result;
   }
@@ -290,16 +274,24 @@ export default class Model {
    * test.findOne({ where: { id: 1 } });
    * ```
    */
-  static async findOne(options: Record<string, any>) {
-    const keys = Object.keys(options);
-    const values = Object.values(options);
+  static async findOne(options?: FindOptionsWhere) {
+    const { where = {} } = options || {};
+    const whereKeys = Object.keys(where);
+    const whereValues = Object.values(where);
+    const whereSql = whereKeys.length
+      ? ` WHERE ${whereKeys.map((item) => `${item} = ?`).join(' AND ')}`
+      : ' WHERE 1=1';
+    const paranoidSql = this._getRawAttributes.deletedAt
+      ? ` AND ${this._getRawOptions.deletedAt} IS NULL`
+      : '';
+    const sql = `SELECT * FROM ${this.modelName}${whereSql}${paranoidSql} LIMIT 1`;
+    const result = await this.getDB.select<any>(sql, whereValues).catch((error) => {
+      throw new Error(error);
+    });
 
-    const result = await this.getDB.select(
-      `SELECT * FROM ${this.modelName} WHERE ${keys.map((key) => `${key} = ?`).join(' AND ')} LIMIT 1`,
-      values
-    );
+    if (result.length) return result[0];
 
-    return result;
+    return null;
   }
 
   /**
@@ -310,36 +302,33 @@ export default class Model {
    * @example
    * ```ts
    * test.findAll({
-   *  where: { id: 1 },
-   *  limit: 10,
-   *  offset: 0,
-   *  order: ['id', 'DESC']
+   *   where: {
+   *     id: 1
+   *   },
+   *   limit: 10,
+   *   offset: 0,
+   *   order: ['id', 'DESC']
    * });
    * ```
    */
-  static async findAll(options: FindOptions = {}) {
-    const { where = {}, limit = 0, offset = 0, order = [] } = options;
-    const keys = Object.keys(where);
-    const values = Object.values(where);
-
-    let sql = `SELECT * FROM ${this.modelName}`;
-    if (keys.length) {
-      sql += ` WHERE ${keys.map((key) => `${key} = ?`).join(' AND ')}`;
+  static async findAll(options?: FindAllOptions) {
+    const { where = {}, limit, offset, order } = options || {};
+    const whereKeys = Object.keys(where);
+    const whereValues = Object.values(where);
+    let paranoidSql = '';
+    if (options?.paranoid === false || options?.paranoid === undefined) {
+      paranoidSql = this._getRawOptions.deletedAt
+        ? ` AND ${this._getRawOptions.deletedAt} IS NULL`
+        : '';
     }
-
-    if (order && order.length) {
-      sql += ` ORDER BY ${order[0]} ${order[1]}`;
-    }
-
-    if (limit) {
-      sql += ` LIMIT ${limit}`;
-    }
-
-    if (offset) {
-      sql += ` OFFSET ${offset}`;
-    }
-
-    const result = await this.getDB.select(sql, values).catch((error) => {
+    const whereSql = whereKeys.length
+      ? ` WHERE ${whereKeys.map((item) => `${item} = ?`).join(' AND ')}`
+      : ' WHERE 1=1';
+    const orderSql = order ? ` ORDER BY ${order}` : '';
+    const limitSql = limit ? ` LIMIT ${limit}` : '';
+    const offsetSql = offset ? ` OFFSET ${offset}` : '';
+    const sql = `SELECT * FROM ${this.modelName}${whereSql}${paranoidSql}${orderSql}${limitSql}${offsetSql}`;
+    const result = await this.getDB.select(sql, whereValues).catch((error) => {
       throw new Error(error);
     });
 
@@ -347,39 +336,58 @@ export default class Model {
   }
 
   /**
-   * execute sql
-   * @param sql
-   * @param value
+   * if model has deletedAt, will update deletedAt
+   * if model not has deletedAt or force is true, will delete data
+   * @param options
    * @returns
    *
    * @example
    * ```ts
-   * test.execute('SELECT * FROM test');
+   * test.destroy({ where: { id: 1 } });
    * ```
    */
-  static async execute(sql: string, value?: any[]) {
-    if (!value) {
-      return this.getDB.execute(sql);
+  static async destroy(options?: DestroyOptions) {
+    const { where = {} } = options || {};
+    const whereKeys = Object.keys(where);
+    const whereValues = Object.values(where);
+    const whereSql = whereKeys.length
+      ? ` WHERE ${whereKeys.map((item) => `${item} = ?`).join(' AND ')}`
+      : '';
+    let sql = '';
+    if (options?.force || !this._getRawOptions.deletedAt) {
+      sql = `DELETE FROM ${this.modelName}${whereSql}`;
+    } else if (this._getRawOptions.deletedAt) {
+      sql = `UPDATE ${this.modelName} SET ${this._getRawOptions.deletedAt} = '${this._getTimezoneDate}'${whereSql}`;
     }
-    await this.getDB.execute(sql, value);
+    const result = await this.getDB.execute(sql, whereValues).catch((error) => {
+      throw new Error(error);
+    });
+
+    return result;
   }
 
-  /**
-   * select sql
-   * @param sql
-   * @param value
-   * @returns
-   *
-   * @example
-   * ```ts
-   * test.select('SELECT * FROM test');
-   * ```
-   */
-  static async select(sql: string, value?: any[]) {
-    if (!value) {
-      return this.getDB.select(sql);
+  /** if model has deletedAt, will restore data */
+  static async restore(options: RestoreOptions) {
+    if (!options || !options.where) {
+      throw new Error('options.where is required');
     }
-    await this.getDB.select(sql, value);
+    const keys = Object.keys(options.where);
+    const values = Object.values(options.where);
+
+    // if model not has deletedAt, throw error
+    if (!this._getRawOptions.deletedAt) {
+      throw new Error(`${this.modelName} not has deletedAt`);
+    }
+
+    // if model has deletedAt, will restore data by deletedAt
+    // and updatedAt will update
+    const sql = `UPDATE ${this.modelName} SET ${this._getRawOptions.deletedAt} = NULL, ${this._getRawOptions.updatedAt
+      } = '${this._getTimezoneDate}' WHERE ${keys.map((key) => `${key} = ?`).join(' AND ')}`;
+    const result = await this.getDB.execute(sql, values).catch((error) => {
+      throw new Error(error);
+    });
+
+    return result;
   }
 
   /**
@@ -387,6 +395,42 @@ export default class Model {
    * @returns
    */
   static async drop() {
-    return await this.getDB.execute(`DROP TABLE IF EXISTS ${this.modelName}`);
+    return await this.getDB.execute(`DROP TABLE IF EXISTS ${this.modelName}`).catch((error) => {
+      throw new Error(error);
+    });
   }
+}
+
+/** find primary key */
+function findPrimaryKey(attributes: ModelAttributes) {
+  if (!attributes) throw new Error('attributes is required');
+
+  const keys = Object.keys(attributes);
+  for (const key of keys) {
+    if (attributes[key].primaryKey) return key;
+  }
+}
+
+/** get timestamp properties */
+function accessTimestamps(options: ModelOptions & Record<string, any>) {
+  const timestampsProperties = {} as TimestampsProperties &
+    Record<string, TimestampsTypeAndProperties>;
+  if (options.timestamps) {
+    const timestampKeys = ['createdAt', 'updatedAt', 'deletedAt'];
+
+    for (const key of timestampKeys) {
+      const timestampKey = typeof options[key] === 'string' ? options[key] : key;
+      if (options[key] === false) continue;
+      timestampsProperties[key] = {
+        key: timestampKey,
+        type: 'DATE',
+        properties: {
+          type: 'DATE',
+          defaultValue: key === 'deletedAt' ? null : getLocalTime(options.timezone)
+        }
+      };
+    }
+  }
+
+  return timestampsProperties;
 }
