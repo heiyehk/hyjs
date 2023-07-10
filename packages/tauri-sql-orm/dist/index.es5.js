@@ -1,7 +1,7 @@
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('tauri-plugin-sql-api')) :
     typeof define === 'function' && define.amd ? define(['exports', 'tauri-plugin-sql-api'], factory) :
-    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global["@hyjs/tauri-sql-orm"] = {}, global.SqlDatabase));
+    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.__TauriSqlOrm__ = {}, global.SqlDatabase));
 })(this, (function (exports, SqlDatabase) { 'use strict';
 
     function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
