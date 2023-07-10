@@ -13,7 +13,7 @@
     "build": "npm run clean && lerna run build --stream && rollup -c",
     "build:ci": "cross-env UMD=1 npm run build",
     "tsc": "node scripts/tsconfig.mjs",
-    "pkg": "node scripts/packageJson.mjs",
+    "pkgn": "node scripts/packageJson.mjs",
     "lint": "eslint ./packages --ext ts",
     "fix": "eslint ./packages --ext ts --fix",
     "doc": "docsify",

@@ -14,7 +14,6 @@ const umd = process.env.UMD;
 
 const configs = packages.map(key => {
   const pkg = fs.readJsonSync(`./packages/${key}/package.json`);
-  const umdName = 'hyjs';
 
   if (pkg.private) return [];
 
@@ -77,7 +76,7 @@ const configs = packages.map(key => {
   /** @type {import('rollup').OutputOptions} */
   const umdOutputOption = {
     format: 'umd',
-    name: umdName,
+    name: pkg.globalName || pkg.name.replace(/-/g, '_'),
     sourcemap: false,
     inlineDynamicImports: true,
   };

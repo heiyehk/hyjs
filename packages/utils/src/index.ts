@@ -1,4 +1,4 @@
-import { getDevice, ieIE, isMobile, getWxEnv } from './env';
+import { getDevice, getWxEnv, ieIE, isMobile } from './env';
 import {
   compressImage,
   convertBase64ToFile,

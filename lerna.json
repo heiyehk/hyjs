@@ -4,6 +4,7 @@
     "packages/tauri-sql-orm"
   ],
   "version": "independent",
+  "useWorkspaces": true,
   "command": {
     "publish": {
       "conventionalCommits": true,
