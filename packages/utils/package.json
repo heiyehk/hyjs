@@ -1,6 +1,6 @@
 {
   "name": "@hyjs/utils",
-  "version": "0.3.1",
+  "version": "0.3.0",
   "description": "Some common utility functions in JavaScript/Node.js",
   "author": "heiyehk <heiyehk@foxmail.com>",
   "homepage": "https://github.com/heiyehk/hyjs#readme",
@@ -38,6 +38,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "6183ec5769fe09562acc49414d935d36ca94e4ab",
-  "globalName": "__utils__"
+  "gitHead": "6183ec5769fe09562acc49414d935d36ca94e4ab"
 }

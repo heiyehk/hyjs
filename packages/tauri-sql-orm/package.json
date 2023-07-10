@@ -1,6 +1,6 @@
 {
   "name": "@hyjs/tauri-sql-orm",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "description": "tauri-plugin-sql-api's ORM encapsulation provides a convenient and versatile way for developers to interact with SQL databases in their Tauri applications.",
   "type": "module",
   "keywords": [
@@ -46,6 +46,5 @@
   "gitHead": "6183ec5769fe09562acc49414d935d36ca94e4ab",
   "dependencies": {
     "tauri-plugin-sql-api": "https://github.com/tauri-apps/tauri-plugin-sql.git"
-  },
-  "globalName": "__TauriSqlOrm__"
+  }
 }

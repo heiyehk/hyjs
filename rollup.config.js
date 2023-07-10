@@ -76,7 +76,7 @@ const configs = packages.map(key => {
   /** @type {import('rollup').OutputOptions} */
   const umdOutputOption = {
     format: 'umd',
-    name: pkg.globalName || pkg.name.replace(/-/g, '_'),
+    name: pkg.name || pkg.name.replace(/-/g, '_'),
     sourcemap: false,
     inlineDynamicImports: true,
   };
