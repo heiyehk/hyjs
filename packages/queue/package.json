@@ -1,0 +1,46 @@
+{
+  "name": "@hyjs/queue",
+  "version": "0.0.1",
+  "description": "The queue package provides a utility for controlling the execution of asynchronous promises in a sequential manner. It allows you to enqueue tasks and ensures that they are processed one by one, maintaining the order of execution. This is especially useful when dealing with a large number of asynchronous operations that need to be performed in a specific sequence.",
+  "keywords": [
+    "queue"
+  ],
+  "author": "heiyehk <heiyehk@foxmail.com>",
+  "homepage": "https://github.com/heiyehk/hyjs#readme",
+  "license": "ISC",
+  "main": "dist/index.cjs.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heiyehk/hyjs.git"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "jest"
+  },
+  "bugs": {
+    "url": "https://github.com/heiyehk/hyjs/issues"
+  },
+  "module": "dist/index.esm.js",
+  "unpkg": "dist/index.min.js",
+  "jsdelivr": "dist/index.min.js",
+  "types": "lib/index.d.ts",
+  "gitHead": "6183ec5769fe09562acc49414d935d36ca94e4ab",
+  "dependencies": {
+    "md5": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/md5": "^2.3.2"
+  },
+  "globalName": "__Queue__"
+}
