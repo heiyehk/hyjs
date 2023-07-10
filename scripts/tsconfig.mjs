@@ -8,10 +8,7 @@ const tsconfigTemplate = {
     outDir: './lib',
     rootDir: './src'
   },
-  exclude: [
-    'node_modules',
-    'dist'
-  ]
+  exclude: ['node_modules', 'dist']
 };
 
 const __filename = fileURLToPath(import.meta.url);

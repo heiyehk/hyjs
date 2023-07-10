@@ -1,4 +1,4 @@
-import { getDevice, ieIE, isMobile, getWxEnv } from './env';
+import { getDevice, getWxEnv, ieIE, isMobile } from './env';
 import { compressImage, convertBase64ToFile, downloadFile, fileToBase64, getAudioDuration } from './file';
 import { debounce, getAccessType, sleep, throttle } from './function';
 import { convertCurrency, numberToChinese, randomNumber } from './number';

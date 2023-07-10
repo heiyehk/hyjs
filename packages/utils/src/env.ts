@@ -33,7 +33,7 @@ export const ieIE = () => navigator.userAgent.toLowerCase().indexOf('trident') >
  * - `wx` 微信环境内
  * - `mini-wx` 小程序内
  * - `no-wx` 非微信
- * @returns 
+ * @returns
  */
 export const getWxEnv = (): Promise<'wx' | 'mini-wx' | 'no-wx' | ''> => {
   const ua: string = navigator.userAgent.toLowerCase();
