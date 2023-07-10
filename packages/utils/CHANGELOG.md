@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.1](https://github.com/heiyehk/hyjs/compare/@hyjs/utils@0.3.1...@hyjs/utils@0.3.1) (2023-07-10)
+
+### Reverts
+
+- Revert "Publish" ([dd0b312](https://github.com/heiyehk/hyjs/commit/dd0b31240503a210f623b3bd4e9f7a6802686418))
+
 # 0.3.0 (2023-05-10)
 
 ## 0.2.4 (2023-03-23)

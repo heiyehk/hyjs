@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.1](https://github.com/heiyehk/hyjs/compare/@hyjs/tauri-sql-orm@0.1.1...@hyjs/tauri-sql-orm@0.1.1) (2023-07-10)
+
+### Reverts
+
+- Revert "Publish" ([dd0b312](https://github.com/heiyehk/hyjs/commit/dd0b31240503a210f623b3bd4e9f7a6802686418))
+
 # [0.1.0](https://github.com/heiyehk/hyjs/compare/@hyjs/tauri-sql-orm@0.0.3...@hyjs/tauri-sql-orm@0.1.0) (2023-05-26)
 
 ### Features
