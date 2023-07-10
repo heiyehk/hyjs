@@ -46,5 +46,6 @@
   "gitHead": "6183ec5769fe09562acc49414d935d36ca94e4ab",
   "dependencies": {
     "tauri-plugin-sql-api": "https://github.com/tauri-apps/tauri-plugin-sql.git"
-  }
+  },
+  "globalName": "__TauriSqlOrm__"
 }
