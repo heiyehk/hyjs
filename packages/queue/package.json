@@ -36,11 +36,5 @@
   "jsdelivr": "dist/index.min.js",
   "types": "lib/index.d.ts",
   "gitHead": "6183ec5769fe09562acc49414d935d36ca94e4ab",
-  "dependencies": {
-    "md5": "^2.3.0"
-  },
-  "devDependencies": {
-    "@types/md5": "^2.3.2"
-  },
   "globalName": "__Queue__"
 }

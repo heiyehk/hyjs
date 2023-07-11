@@ -4,6 +4,15 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.__Queue__ = factory());
 })(this, (function () { 'use strict';
 
+    /**
+     * 类型获取
+     * @param access 参数
+     */
+    var getAccessType = function (access) {
+        return Object.prototype.toString.call(access).slice(8, -1);
+    };
+    var isNullOrUndefined = function (access) { return access === null || access === undefined; };
+
     var __assign = (undefined && undefined.__assign) || function () {
         __assign = Object.assign || function(t) {
             for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -76,14 +85,6 @@
         }
         return to.concat(ar || Array.prototype.slice.call(from));
     };
-    /**
-     * 类型获取
-     * @param access 参数
-     */
-    var getAccessType = function (access) {
-        return Object.prototype.toString.call(access).slice(8, -1);
-    };
-    var isNullOrUndefined = function (access) { return access === null || access === undefined; };
     var Queue = /** @class */ (function () {
         function Queue(params, options) {
             this.status = 'stop';
@@ -93,24 +94,9 @@
             this.resultList = [];
             this.runningIndex = 0;
             this.maxConcurrency = 6;
-            this.maxQueue = 1;
-            this.timeout = 1000;
-            this.retry = 3;
-            this.retryDelay = 1000;
-            this.retryBackoff = 1;
-            this.retryJitter = 1;
-            this.retryMaxDelay = 1000;
-            this.retryMaxAttempts = 3;
-            this.retryHandle = function (error, retryCount) { return true; };
-            this.retryFilter = function (error, retryCount) { return true; };
-            this.retryTimeout = 1000;
-            this.retryOnTimeout = true;
             this.events = {};
-            this.allowStart = ['stop', 'pause', 'resume', 'error', 'timeout'];
+            this.allowStart = ['stop', 'pause', 'error', 'timeout'];
             this.notAllowStart = ['start', 'running'];
-            this.allowStop = ['start', 'running', 'pause', 'resume', 'error', 'timeout'];
-            this.allowPause = ['running', 'error', 'timeout'];
-            this.allowResume = ['pause', 'error', 'timeout'];
             if (getAccessType(params) === 'Object') {
                 this.init(params);
             }
@@ -118,26 +104,19 @@
                 this.init(__assign({ waitList: params }, options));
             }
         }
+        Queue.prototype.fillAttribute = function (list) {
+            return list.map(function (item, index) {
+                return {
+                    fn: item,
+                    _id: index
+                };
+            });
+        };
         Queue.prototype.init = function (params) {
-            var waitList = __spreadArray([], __read((params.waitList || this.cacheList)), false).map(function (item, index) { return ({
-                _id: index,
-                fn: item
-            }); });
+            var waitList = this.fillAttribute(__spreadArray([], __read((params.waitList || this.cacheList)), false));
             this.cacheList = __spreadArray([], __read(waitList), false);
-            this.waitList = waitList;
+            this.waitList = __spreadArray([], __read(waitList), false);
             this.maxConcurrency = params.maxConcurrency || this.maxConcurrency;
-            this.maxQueue = params.maxQueue || this.maxQueue;
-            this.timeout = params.timeout || this.timeout;
-            this.retry = params.retry || this.retry;
-            this.retryDelay = params.retryDelay || this.retryDelay;
-            this.retryBackoff = params.retryBackoff || this.retryBackoff;
-            this.retryJitter = params.retryJitter || this.retryJitter;
-            this.retryMaxDelay = params.retryMaxDelay || this.retryMaxDelay;
-            this.retryMaxAttempts = params.retryMaxAttempts || this.retryMaxAttempts;
-            this.retryHandle = params.retryHandle || this.retryHandle;
-            this.retryFilter = params.retryFilter || this.retryFilter;
-            this.retryTimeout = params.retryTimeout || this.retryTimeout;
-            this.retryOnTimeout = params.retryOnTimeout || this.retryOnTimeout;
             this.runningList = this.waitList.splice(0, this.maxConcurrency);
         };
         Queue.prototype.on = function (event, listener) {
@@ -154,20 +133,77 @@
             this.runOnEvent('start');
             this.run();
         };
-        Queue.prototype.stop = function () {
-            console.log('stop');
+        /**
+         * 停止队列
+         * @param finish 是否执行finish事件
+         */
+        Queue.prototype.stop = function (finish) {
+            if (finish === void 0) { finish = false; }
+            this.status = 'stop';
+            if (finish) {
+                this.finishEvent();
+            }
         };
+        /**
+         * 暂停队列
+         */
         Queue.prototype.pause = function () {
-            console.log('pause');
+            this.status = 'pause';
         };
+        /**
+         * 恢复队列
+         */
         Queue.prototype.resume = function () {
-            console.log('resume');
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            this.status = 'resume';
+                            return [4 /*yield*/, this.traverseRunningList()];
+                        case 1:
+                            _a.sent();
+                            return [2 /*return*/];
+                    }
+                });
+            });
         };
-        Queue.prototype.add = function (fn) {
-            console.log(fn);
+        Queue.prototype.add = function (fn, index) {
+            if (index !== undefined) {
+                this.waitList.splice(index, 0, {
+                    _id: index,
+                    fn: fn
+                });
+                return;
+            }
+            var _id = this.cacheList.length;
+            var record = {
+                _id: _id,
+                fn: fn
+            };
+            this.cacheList.push(record);
+            this.waitList.push(record);
         };
+        /**
+         * 删除队列中的某个任务
+         * @param fn 如果是函数，会根据函数的toString方法来判断是否是同一个函数，否则自动删除waitList中的最后一个任务
+         * @returns
+         */
         Queue.prototype.remove = function (fn) {
-            console.log(fn);
+            if (fn) {
+                this.waitList = this.waitList.filter(function (item) { return item.fn.toString() !== fn.toString(); });
+            }
+            else {
+                // 删除最后一个
+                if (this.runningList.length) {
+                    // 如果还有正在等待的任务，删除最后一个
+                    if (this.waitList.length) {
+                        this.waitList.pop();
+                    }
+                    this.runningList.pop();
+                    this.cacheList.pop();
+                    console.log(this.waitList, this.runningList, this.cacheList);
+                }
+            }
         };
         Queue.prototype.clear = function () {
             console.log('clear');
@@ -203,37 +239,42 @@
         };
         Queue.prototype.operationalFn = function (record) {
             return __awaiter(this, void 0, void 0, function () {
-                var fnResult, _a, _b, nextFn;
-                return __generator(this, function (_c) {
-                    switch (_c.label) {
+                var fnResult, nextFn;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
                         case 0:
-                            if (!(getAccessType(record.fn) !== 'Function')) return [3 /*break*/, 2];
-                            _b = (_a = console).log;
-                            return [4 /*yield*/, record.fn];
+                            if (this.allowStart.includes(this.status)) {
+                                return [2 /*return*/];
+                            }
+                            if (!(getAccessType(record.fn) !== 'Function')) return [3 /*break*/, 1];
+                            return [2 /*return*/, new Error("".concat(record.fn, " is not a function, the subscript is ").concat(this.runningIndex))];
                         case 1:
-                            _b.apply(_a, [_c.sent(), this.runningIndex]);
-                            return [2 /*return*/, new Error("".concat(record.fn.toString(), " is not a function, the subscript is ").concat(this.runningIndex))];
-                        case 2: return [4 /*yield*/, this.fnToPromiseFn(record.fn).then(function (res) {
-                                return res;
-                            })];
+                            if (!(getAccessType(record.fn) === 'Function')) return [3 /*break*/, 3];
+                            return [4 /*yield*/, this.fnToPromiseFn(record.fn).then(function (res) {
+                                    return res;
+                                })];
+                        case 2:
+                            fnResult = _a.sent();
+                            if (this.status === 'running' && !record._remove) {
+                                this.runOnEvent('success', fnResult, record._id);
+                            }
+                            _a.label = 3;
                         case 3:
-                            fnResult = _c.sent();
-                            this.runOnEvent('success', fnResult);
-                            _c.label = 4;
-                        case 4:
-                            // 当前任务执行完毕，将结果存入结果集
+                            // 当前任务执行完毕，将结果存入结果集，即使任务被删除，也要存 空 进入结果集
                             this.resultList[record._id] = fnResult;
+                            if (this.status !== 'running' || record._remove)
+                                return [2 /*return*/];
                             this.runningList.splice(this.runningList.findIndex(function (item) { return item._id === record._id; }), 1);
                             this.runningIndex++;
-                            if (this.waitList.length > 0 && this.runningIndex <= this.cacheList.length - 1) {
+                            if (!this.allowStart.includes(this.status) &&
+                                this.waitList.length > 0 &&
+                                this.runningIndex <= this.cacheList.length - 1) {
                                 nextFn = this.waitList.shift();
                                 this.runningList.push(nextFn);
                                 this.operationalFn(nextFn);
                             }
                             if (this.waitList.length === 0 && this.runningList.length === 0) {
-                                this.status = 'finish';
-                                this.runningIndex = 0;
-                                this.runOnEvent('finish', this.resultList);
+                                this.finishEvent();
                             }
                             return [2 /*return*/];
                     }
@@ -242,32 +283,35 @@
         };
         Queue.prototype.traverseRunningList = function () {
             return __awaiter(this, void 0, void 0, function () {
-                var i, record, _a, _b, error;
-                return __generator(this, function (_c) {
-                    switch (_c.label) {
+                var i, record, error_1, error, _a;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
                         case 0:
-                            i = 0;
-                            _c.label = 1;
+                            i = this.runningIndex;
+                            _b.label = 1;
                         case 1:
-                            if (!(i < this.maxConcurrency)) return [3 /*break*/, 5];
-                            record = this.runningList[i];
-                            if (!(this.runningIndex < this.cacheList.length)) return [3 /*break*/, 4];
-                            if (!isNullOrUndefined(record.fn)) return [3 /*break*/, 3];
-                            _b = (_a = console).log;
-                            return [4 /*yield*/, record.fn];
-                        case 2:
-                            _b.apply(_a, [_c.sent()]);
-                            this.runOnEvent('error', new Error("".concat(record.fn.toString(), " is undefined, the subscript is ").concat(this.runningIndex)));
-                            _c.label = 3;
-                        case 3:
+                            if (!(i < this.maxConcurrency)) return [3 /*break*/, 4];
+                            if (this.allowStart.includes(this.status)) {
+                                return [3 /*break*/, 4];
+                            }
+                            record = this.cacheList[i];
+                            if (!(this.runningIndex < this.cacheList.length)) return [3 /*break*/, 3];
+                            if (isNullOrUndefined(record.fn)) {
+                                error_1 = new Error("".concat(record.fn, " is undefined, the subscript is ").concat(this.runningIndex));
+                                this.runOnEvent('error', error_1);
+                                throw error_1;
+                            }
                             error = this.operationalFn(record);
-                            if (error)
+                            _a = getAccessType;
+                            return [4 /*yield*/, error];
+                        case 2:
+                            if (_a.apply(void 0, [_b.sent()]) === 'Error')
                                 throw error;
-                            _c.label = 4;
-                        case 4:
+                            _b.label = 3;
+                        case 3:
                             i++;
                             return [3 /*break*/, 1];
-                        case 5: return [2 /*return*/];
+                        case 4: return [2 /*return*/];
                     }
                 });
             });
@@ -284,50 +328,15 @@
                 }
             }
         };
+        Queue.prototype.finishEvent = function () {
+            this.status = 'finish';
+            this.runningIndex = 0;
+            this.waitList = [];
+            this.cacheList = [];
+            this.runOnEvent('finish', this.resultList);
+        };
         return Queue;
     }());
-    var a = [];
-    var aaa = function (b) {
-        return new Promise(function (resolve) {
-            setTimeout(function () {
-                resolve(b);
-            }, 1000);
-        });
-    };
-    a.push(aaa('aaaaaaaaa'));
-    // a.push(aaa.bind(null, 'aaaaaaaaa'));
-    var jsAsyncTemp = function () {
-        return new Promise(function (resolve) {
-            setTimeout(function () {
-                resolve('{{code}}');
-            }, 1000);
-        });
-    };
-    var jsSyncTemp = function () {
-        return '{{code}}';
-    };
-    for (var i = 0; i < 10; i++) {
-        var sc = String.fromCharCode(65 + i);
-        var s = jsSyncTemp.toString().replace('{{code}}', sc);
-        if (i % 2 === 0) {
-            s = jsAsyncTemp.toString().replace('{{code}}', sc);
-        }
-        a.push(eval("(".concat(s, ")")));
-    }
-    var queue = new Queue(a, {
-        maxConcurrency: 1
-    });
-    var start_time = 0;
-    var end_time = 0;
-    queue.on('start', function () {
-        start_time = performance.now();
-    });
-    queue.on('finish', function (e) {
-        console.log('finish===', e);
-        end_time = performance.now();
-        console.log('耗时：' + (end_time - start_time) + '微秒。');
-    });
-    queue.start();
 
     return Queue;
 
