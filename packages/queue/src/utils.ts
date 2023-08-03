@@ -24,3 +24,6 @@ export type AccessType =
 export const getAccessType = (access: any) => {
   return Object.prototype.toString.call(access).slice(8, -1) as AccessType;
 };
+
+export const isNullOrUndefined = (access: any): boolean => access === null || access === undefined;
+export const isError = (access: any): boolean => getAccessType(access) === 'Error';

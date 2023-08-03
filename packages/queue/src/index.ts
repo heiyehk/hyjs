@@ -1,20 +1,11 @@
-// import type { QueueEvent, QueueOptions, QueueParams, SignWaitRecord, WaitFn } from './type';
-// import { getAccessType, isNullOrUndefined } from './utils';
-
-type WaitFn = (...args: any[]) => void;
-type WaitFunction = WaitFn | Promise<WaitFn>;
-type SignWaitRecord = {
-  _id: number;
-  _remove?: boolean;
-  /** 错误重试次数 */
-  _retryCount?: number;
-  fn: WaitFunction;
-};
+import type { QueueEvent, QueueOptions, QueueParams, SignWaitRecord, WaitFn } from './type';
+import { getAccessType, isError, isNullOrUndefined } from './utils';
 
 /**
  * 队列
  * @param waitList 等待队列
  * @param maxConcurrency 最大并发数
+ * @param retryCount 错误重试次数
  * @returns
  * @example
  * ``` ts
@@ -24,57 +15,6 @@ type SignWaitRecord = {
  * });
  * ```
  */
-type QueueOptions = {
-  /** 等待队列 */
-  waitList: WaitFunction[];
-  /** 最大并发数 */
-  maxConcurrency: number;
-  /** 错误重试次数 */
-  retryCount: number;
-};
-type QueueParams = Partial<QueueOptions> | WaitFunction[];
-
-type QueueEvent =
-  | 'success'
-  | 'start'
-  | 'stop'
-  | 'pause'
-  | 'resume'
-  | 'running'
-  | 'add'
-  | 'remove'
-  | 'finish'
-  | 'clear'
-  | 'error'
-  | 'timeout';
-type AccessType =
-  | 'String'
-  | 'Object'
-  | 'Number'
-  | 'Boolean'
-  | 'Symbol'
-  | 'Undefined'
-  | 'Null'
-  | 'Function'
-  | 'AsyncFunction'
-  | 'Date'
-  | 'Array'
-  | 'RegExp'
-  | 'Error'
-  | 'Promise'
-  | 'global';
-
-/**
- * 类型获取
- * @param access 参数
- */
-const getAccessType = (access: any): AccessType => {
-  return Object.prototype.toString.call(access).slice(8, -1) as AccessType;
-};
-
-const isNullOrUndefined = (access: any): boolean => access === null || access === undefined;
-const isError = (access: any): boolean => getAccessType(access) === 'Error';
-
 class Queue {
   private waitList: SignWaitRecord[] = [];
   private maxConcurrency = 6;

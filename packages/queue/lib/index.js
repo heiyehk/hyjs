@@ -1,5 +1,3 @@
-// import type { QueueEvent, QueueOptions, QueueParams, SignWaitRecord, WaitFn } from './type';
-// import { getAccessType, isNullOrUndefined } from './utils';
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -72,15 +70,21 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
+import { getAccessType, isError, isNullOrUndefined } from './utils';
 /**
- * 类型获取
- * @param access 参数
+ * 队列
+ * @param waitList 等待队列
+ * @param maxConcurrency 最大并发数
+ * @param retryCount 错误重试次数
+ * @returns
+ * @example
+ * ``` ts
+ * const queue = new Queue({
+ *   waitList: [fn1, fn2, fn3],
+ *   maxConcurrency: 1,
+ * });
+ * ```
  */
-var getAccessType = function (access) {
-    return Object.prototype.toString.call(access).slice(8, -1);
-};
-var isNullOrUndefined = function (access) { return access === null || access === undefined; };
-var isError = function (access) { return getAccessType(access) === 'Error'; };
 var Queue = /** @class */ (function () {
     function Queue(params, options) {
         this.waitList = [];

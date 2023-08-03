@@ -1,9 +1,9 @@
-declare type WaitFn = (...args: any[]) => void;
-declare type WaitFunction = WaitFn | Promise<WaitFn>;
+import type { QueueEvent, QueueOptions, QueueParams, WaitFn } from './type';
 /**
  * 队列
  * @param waitList 等待队列
  * @param maxConcurrency 最大并发数
+ * @param retryCount 错误重试次数
  * @returns
  * @example
  * ``` ts
@@ -13,16 +13,6 @@ declare type WaitFunction = WaitFn | Promise<WaitFn>;
  * });
  * ```
  */
-declare type QueueOptions = {
-    /** 等待队列 */
-    waitList: WaitFunction[];
-    /** 最大并发数 */
-    maxConcurrency: number;
-    /** 错误重试次数 */
-    retryCount: number;
-};
-declare type QueueParams = Partial<QueueOptions> | WaitFunction[];
-declare type QueueEvent = 'success' | 'start' | 'stop' | 'pause' | 'resume' | 'running' | 'add' | 'remove' | 'finish' | 'clear' | 'error' | 'timeout';
 declare class Queue {
     private waitList;
     private maxConcurrency;
