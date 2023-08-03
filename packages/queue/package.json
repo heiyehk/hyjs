@@ -1,6 +1,6 @@
 {
   "name": "@hyjs/queue",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "The queue package provides a utility for controlling the execution of asynchronous promises in a sequential manner. It allows you to enqueue tasks and ensures that they are processed one by one, maintaining the order of execution. This is especially useful when dealing with a large number of asynchronous operations that need to be performed in a specific sequence.",
   "keywords": [
     "queue"

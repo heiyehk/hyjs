@@ -1,6 +1,6 @@
 {
   "name": "@hyjs/utils",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Some common utility functions in JavaScript/Node.js",
   "author": "heiyehk <heiyehk@foxmail.com>",
   "homepage": "https://github.com/heiyehk/hyjs#readme",
