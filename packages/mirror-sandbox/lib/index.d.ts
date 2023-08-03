@@ -1,25 +1,26 @@
-declare type MirrorSandboxPlugin = any;
+export declare type MirrorSandboxPlugin = (doc: Document) => void;
 declare type MirrorSandboxHeadAttr = {
-    script: (HTMLScriptElement | string)[];
-    style: (HTMLStyleElement | string)[];
-    link: HTMLLinkElement[];
+    [key: string]: any;
+    script?: (Partial<HTMLScriptElement> | string)[];
+    style?: string | string[];
+    link?: Partial<HTMLLinkElement>[];
 };
 declare type MirrorSandboxOptions = {
-    iframe: HTMLIFrameElement;
+    iframe: Partial<SandboxHTMLIFrameElement>;
     head?: MirrorSandboxHeadAttr;
-    plugins?: [];
+    plugins?: MirrorSandboxPlugin[];
 };
 declare class MirrorSandbox {
     iframeRef: HTMLIFrameElement | null;
-    rawOptions: MirrorSandboxOptions;
-    iframeAttributes: HTMLIFrameElement;
-    headAttributes: MirrorSandboxHeadAttr;
+    private rawOptions;
+    private headAttributes;
     constructor(element: Element, options?: MirrorSandboxOptions);
-    createIframe(element: Element, iframeOptions: HTMLIFrameElement): void;
-    createIframeMarkdownBody(): this | undefined;
-    injectPlugin(plugin: MirrorSandboxPlugin[]): void;
-    insertIframeHead(headAttributes?: MirrorSandboxHeadAttr): void;
+    private get contentDocument();
+    private createIframe;
+    private createIframeMarkdownBody;
+    private injectPlugin;
+    private insertIframeHead;
     insertIframeBody(script: MirrorSandboxHeadAttr['script']): this | undefined;
-    loadMd(html: string): void;
+    loadHtml(html: string): void;
 }
 export default MirrorSandbox;

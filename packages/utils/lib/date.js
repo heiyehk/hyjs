@@ -22,7 +22,7 @@ export var dateFormatter = function (formatter, date) {
     var H = dateAfter.getHours();
     var m = dateAfter.getMinutes();
     var s = dateAfter.getSeconds();
-    var formatNumber = function (n) { return String((n < 10 ? '0' + n : n)); };
+    var formatNumber = function (n) { return String(n < 10 ? '0' + n : n); };
     var matches = {
         YYYY: Y,
         YY: Y % 100,
@@ -31,7 +31,7 @@ export var dateFormatter = function (formatter, date) {
         HH: H,
         hh: H % 12 || 12,
         mm: m,
-        ss: s,
+        ss: s
     };
     return formatter.replace(/YYYY|YY|MM|DD|HH|hh|mm|ss/g, function (match) {
         return matches[match] !== undefined ? formatNumber(matches[match]) : match;

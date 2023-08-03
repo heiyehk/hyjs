@@ -28,3 +28,10 @@ export var getLocalTime = function (timezone) {
     var localTime = sign === '+' ? new Date().getTime() + offset : new Date().getTime() - offset;
     return new Date(localTime).toISOString();
 };
+/**
+ * 类型获取
+ * @param access 参数
+ */
+export var getAccessType = function (access) {
+    return Object.prototype.toString.call(access).slice(8, -1);
+};

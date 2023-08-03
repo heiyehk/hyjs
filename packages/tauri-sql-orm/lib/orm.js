@@ -51,23 +51,23 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 import SqlDatabase from 'tauri-plugin-sql-api';
 import Model from './model';
+/**
+ * #### SQL ORM
+ *
+ * The path is relative to `tauri::api::path::BaseDirectory::App`
+ *
+ * and must start with `sqlite:` or `mysql:` or `postgres:`
+ *
+ * @class SqlORM
+ * @example
+ *
+ * ``` ts
+ * const sqlite = new SqlORM('sqlite:test.db');
+ * const mysql = new SqlORM('mysql://root:root@localhost/database');
+ * const postgres = new SqlORM('postgres://postgres:root@localhost:5432/postgres');
+ * ```
+ */
 var SqlORM = /** @class */ (function () {
-    /**
-     * #### SQL ORM
-     *
-     * The path is relative to `tauri::api::path::BaseDirectory::App`
-     *
-     * and must start with `sqlite:` or `mysql:` or `postgres:`
-     *
-     * @class SqlORM
-     * @example
-     *
-     * ``` ts
-     * const sqlite = new SqlORM('sqlite:test.db');
-     * const mysql = new SqlORM('mysql://root:root@localhost/database');
-     * const postgres = new SqlORM('postgres://postgres:root@localhost:5432/postgres');
-     * ```
-     */
     function SqlORM(path) {
         /** database instance */
         this.db = null;

@@ -2,28 +2,28 @@ import SqlDatabase from 'tauri-plugin-sql-api';
 import Model from './model';
 import type { DatabaseType, ModelAttributes, ModelDefineOptions } from './type';
 export declare type DatabasePath = `${'sqlite' | 'mysql' | 'postgres'}:${string}`;
+/**
+ * #### SQL ORM
+ *
+ * The path is relative to `tauri::api::path::BaseDirectory::App`
+ *
+ * and must start with `sqlite:` or `mysql:` or `postgres:`
+ *
+ * @class SqlORM
+ * @example
+ *
+ * ``` ts
+ * const sqlite = new SqlORM('sqlite:test.db');
+ * const mysql = new SqlORM('mysql://root:root@localhost/database');
+ * const postgres = new SqlORM('postgres://postgres:root@localhost:5432/postgres');
+ * ```
+ */
 export default class SqlORM {
     /** database instance */
     private db;
     /** database path */
     private path;
     private databaseType;
-    /**
-     * #### SQL ORM
-     *
-     * The path is relative to `tauri::api::path::BaseDirectory::App`
-     *
-     * and must start with `sqlite:` or `mysql:` or `postgres:`
-     *
-     * @class SqlORM
-     * @example
-     *
-     * ``` ts
-     * const sqlite = new SqlORM('sqlite:test.db');
-     * const mysql = new SqlORM('mysql://root:root@localhost/database');
-     * const postgres = new SqlORM('postgres://postgres:root@localhost:5432/postgres');
-     * ```
-     */
     constructor(path: DatabasePath);
     private get getDB();
     /**
