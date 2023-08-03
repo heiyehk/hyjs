@@ -1,9 +1,52 @@
 // import type { QueueEvent, QueueOptions, QueueParams, SignWaitRecord, WaitFn } from './type';
 // import { getAccessType, isNullOrUndefined } from './utils';
+
 type WaitFn = (...args: any[]) => void;
 type WaitFunction = WaitFn | Promise<WaitFn>;
-type SignWaitRecord = { _id: number; fn: WaitFunction };
+type SignWaitRecord = {
+  _id: number;
+  _remove?: boolean;
+  /** 错误重试次数 */
+  _retryCount?: number;
+  fn: WaitFunction;
+};
 
+/**
+ * 队列
+ * @param waitList 等待队列
+ * @param maxConcurrency 最大并发数
+ * @returns
+ * @example
+ * ``` ts
+ * const queue = new Queue({
+ *   waitList: [fn1, fn2, fn3],
+ *   maxConcurrency: 1,
+ * });
+ * ```
+ */
+type QueueOptions = {
+  /** 等待队列 */
+  waitList: WaitFunction[];
+  /** 最大并发数 */
+  maxConcurrency: number;
+  /** 错误重试次数 */
+  retryCount: number;
+};
+type QueueParams = Partial<QueueOptions> | WaitFunction[];
+
+type QueueEvent =
+  | 'success'
+  | 'start'
+  | 'stop'
+  | 'pause'
+  | 'resume'
+  | 'running'
+  | 'add'
+  | 'remove'
+  | 'finish'
+  | 'clear'
+  | 'error'
+  | 'timeout';
 type AccessType =
   | 'String'
   | 'Object'
@@ -31,127 +74,22 @@ const getAccessType = (access: any): AccessType => {
 
 const isNullOrUndefined = (access: any): boolean => access === null || access === undefined;
 const isError = (access: any): boolean => getAccessType(access) === 'Error';
-/**
- * 队列
- * @param waitList 等待队列
- * @param maxConcurrency 最大并发数
- * @param maxQueue 最大队列数
- * @param timeout 超时时间
- * @param retry 重试次数
- * @param retryDelay 重试延迟
- * @param retryBackoff 重试退避
- * @param retryJitter 重试抖动
- * @param retryMaxDelay 重试最大延迟
- * @param retryMaxAttempts 重试最大次数
- * @param retryHandle 重试条件
- * @param retryFilter 重试过滤
- * @param retryTimeout 重试超时
- * @param retryOnTimeout 重试超时处理
- * @returns
- * @example
- * ``` ts
- * const queue = new Queue({
- *   waitList: [fn1, fn2, fn3],
- *   maxConcurrency: 1,
- *   maxQueue: 1,
- *   timeout: 1000,
- *   retry: 3,
- *   retryDelay: 1000,
- *   retryBackoff: 1,
- *   retryJitter: 1,
- *   retryMaxDelay: 1000,
- *   retryMaxAttempts: 3,
- *   retryHandle: (error, retryCount) => true,
- *   retryFilter: (error, retryCount) => true,
- *   retryTimeout: 1000,
- *   retryOnTimeout: true,
- * });
- * ```
- */
-type QueueOptions = {
-  /** 等待队列 */
-  waitList: WaitFunction[];
-  /** 最大并发数 */
-  maxConcurrency: number;
-  /** 最大队列数 */
-  maxQueue: number;
-  /** 超时时间 */
-  timeout: number;
-  /** 超时处理 */
-  retry: number;
-  /** 重试延迟 */
-  retryDelay: number;
-  /** 重试退避 */
-  retryBackoff: number;
-  /** 重试抖动 */
-  retryJitter: number;
-  /** 重试最大延迟 */
-  retryMaxDelay: number;
-  /** 重试最大次数 */
-  retryMaxAttempts: number;
-  /** 重试条件 */
-  retryHandle: (error: Error, retryCount: number) => boolean;
-  /** 重试过滤 */
-  retryFilter: (error: Error, retryCount: number) => boolean;
-  /** 重试超时 */
-  retryTimeout: number;
-  /** 重试超时处理 */
-  retryOnTimeout: boolean;
-};
-type QueueParams = Partial<QueueOptions> | WaitFunction[];
 
-type QueueEvent =
-  | 'success'
-  | 'start'
-  | 'stop'
-  | 'pause'
-  | 'resume'
-  | 'running'
-  | 'add'
-  | 'remove'
-  | 'finish'
-  | 'clear'
-  | 'error'
-  | 'timeout'
-  | 'retry'
-  | 'retryError'
-  | 'retryTimeout'
-  | 'retryMaxAttempts'
-  | 'retryMaxDelay'
-  | 'retryBackoff'
-  | 'retryJitter'
-  | 'retryDelay'
-  | 'retryFilter'
-  | 'retryHandle'
-  | 'retryOnTimeout';
 class Queue {
+  private waitList: SignWaitRecord[] = [];
+  private maxConcurrency = 6;
+  private retryCount = 0;
+
   public status: QueueEvent = 'stop';
   private cacheList: SignWaitRecord[] = [];
-  private waitList: SignWaitRecord[] = [];
   private runningList: SignWaitRecord[] = [];
   private resultList: any[] = [];
   private runningIndex = 0;
 
-  private maxConcurrency = 6;
-  private maxQueue = 1;
-  private timeout = 1000;
-  private retry = 3;
-  private retryDelay = 1000;
-  private retryBackoff = 1;
-  private retryJitter = 1;
-  private retryMaxDelay = 1000;
-  private retryMaxAttempts = 3;
-  private retryHandle = (error: Error, retryCount: number) => true;
-  private retryFilter = (error: Error, retryCount: number) => true;
-  private retryTimeout = 1000;
-  private retryOnTimeout = true;
   private events: Record<QueueEvent, ((...args: any[]) => void)[]> = {} as any;
 
-  private allowStart = ['stop', 'pause', 'resume', 'error', 'timeout'];
+  private allowStart = ['stop', 'pause', 'error', 'timeout'];
   private notAllowStart = ['start', 'running'];
-  private allowStop = ['start', 'running', 'pause', 'resume', 'error', 'timeout'];
-  private allowPause = ['running', 'error', 'timeout'];
-  private allowResume = ['pause', 'error', 'timeout'];
 
   constructor(params: QueueParams, options?: Partial<Omit<QueueOptions, 'waitList'>>) {
     if (getAccessType(params) === 'Object') {
@@ -161,29 +99,23 @@ class Queue {
     }
   }
 
+  private fillAttribute(list: any[]) {
+    return list.map((item, index) => {
+      return {
+        fn: item,
+        _id: index
+      };
+    }) as SignWaitRecord[];
+  }
+
   private init(params: QueueOptions) {
-    const waitList = [...(params.waitList || this.cacheList)].map((item, index) => ({
-      _id: index,
-      fn: item
-    }));
+    const waitList = this.fillAttribute([...(params.waitList || this.cacheList)]);
 
     this.cacheList = [...waitList];
-    this.waitList = waitList;
+    this.waitList = [...waitList];
     this.maxConcurrency = params.maxConcurrency || this.maxConcurrency;
-    this.maxQueue = params.maxQueue || this.maxQueue;
-    this.timeout = params.timeout || this.timeout;
-    this.retry = params.retry || this.retry;
-    this.retryDelay = params.retryDelay || this.retryDelay;
-    this.retryBackoff = params.retryBackoff || this.retryBackoff;
-    this.retryJitter = params.retryJitter || this.retryJitter;
-    this.retryMaxDelay = params.retryMaxDelay || this.retryMaxDelay;
-    this.retryMaxAttempts = params.retryMaxAttempts || this.retryMaxAttempts;
-    this.retryHandle = params.retryHandle || this.retryHandle;
-    this.retryFilter = params.retryFilter || this.retryFilter;
-    this.retryTimeout = params.retryTimeout || this.retryTimeout;
-    this.retryOnTimeout = params.retryOnTimeout || this.retryOnTimeout;
-
     this.runningList = this.waitList.splice(0, this.maxConcurrency);
+    this.retryCount = params.retryCount || this.retryCount;
   }
 
   on(event: QueueEvent, listener: (...args: any[]) => void) {
@@ -204,28 +136,80 @@ class Queue {
     this.run();
   }
 
-  stop() {
-    console.log('stop');
+  /**
+   * 停止队列
+   * @param finish 是否执行finish事件
+   */
+  stop(finish = false) {
+    this.status = 'stop';
+    if (finish) {
+      this.finishEvent();
+    }
   }
 
+  /**
+   * 暂停队列
+   */
   pause() {
-    console.log('pause');
+    this.status = 'pause';
   }
 
-  resume() {
-    console.log('resume');
+  /**
+   * 恢复队列
+   */
+  async resume() {
+    this.status = 'resume';
+    this.traverseRunningList();
   }
 
-  add(fn: WaitFn | Promise<WaitFn>) {
-    console.log(fn);
+  add(fn: WaitFn | Promise<WaitFn>): void;
+  add(fn: WaitFn | Promise<WaitFn>, index?: number): void;
+  add(fn: WaitFn | Promise<WaitFn>, index?: number) {
+    if (index !== undefined) {
+      this.waitList.splice(index, 0, {
+        _id: index,
+        fn
+      });
+      return;
+    }
+
+    const _id = this.cacheList.length;
+    const record = {
+      _id,
+      fn
+    };
+
+    this.cacheList.push(record);
+    this.waitList.push(record);
   }
 
-  remove(fn: WaitFn | Promise<WaitFn>) {
-    console.log(fn);
+  /**
+   * 删除队列中的某个任务
+   * @param fn 如果是函数，会根据函数的toString方法来判断是否是同一个函数，否则自动删除waitList中的最后一个任务
+   * @returns
+   */
+  remove(fn?: WaitFn | Promise<WaitFn>) {
+    if (fn) {
+      this.waitList = this.waitList.filter((item) => item.fn.toString() !== fn.toString());
+    } else {
+      // 删除最后一个
+      if (this.runningList.length) {
+        // 如果还有正在等待的任务，删除最后一个
+        if (this.waitList.length) {
+          this.waitList.pop();
+        }
+        this.runningList.pop();
+        this.cacheList.pop();
+      }
+    }
   }
 
   clear() {
-    console.log('clear');
+    this.waitList = [];
+    this.runningList = [];
+    this.cacheList = [];
+    this.resultList = [];
+    this.runningIndex = 0;
   }
 
   private async run() {
@@ -236,74 +220,83 @@ class Queue {
     this.status = 'running';
 
     this.runOnEvent('running');
-    await this.traverseRunningList();
-  }
-
-  private fnToPromiseFn(fn: WaitFn) {
-    return new Promise((resolve, reject) => {
-      try {
-        const result = fn();
-        resolve(result);
-      } catch (error) {
-        reject(error);
-      }
-    });
+    this.traverseRunningList();
   }
 
   private async operationalFn(record: SignWaitRecord) {
-    let fnResult: any;
+    if (this.allowStart.includes(this.status)) {
+      return;
+    }
 
-    if (getAccessType(record.fn) !== 'Function') {
-      console.log(await record.fn, this.runningIndex);
-      return new Error(
-        `${record.fn.toString()} is not a function, the subscript is ${this.runningIndex}`
-      );
+    if (typeof record.fn !== 'function') {
+      return new Error(`${record.fn} is not a function, the subscript is ${this.runningIndex}`);
+    }
+
+    const fnResult = await record.fn();
+
+    // 错误重试
+    if (
+      isError(fnResult) &&
+      this.retryCount &&
+      (!record._retryCount || record._retryCount < this.retryCount)
+    ) {
+      record._retryCount = record._retryCount ? record._retryCount + 1 : 1;
+      this.operationalFn(record);
     } else {
-      fnResult = await this.fnToPromiseFn(record.fn as WaitFn).then((res: any) => {
-        return res;
-      });
-      this.runOnEvent('success', fnResult);
-    }
+      if (this.status === 'running' && !record._remove) {
+        this.runOnEvent('success', fnResult, record._id);
+      }
 
-    // 当前任务执行完毕，将结果存入结果集
-    this.resultList[record._id] = fnResult;
-    this.runningList.splice(
-      this.runningList.findIndex((item) => item._id === record._id),
-      1
-    );
-    this.runningIndex++;
+      // 当前任务执行完毕，将结果存入结果集，即使任务被删除，也要存 空 进入结果集
+      this.resultList[record._id] = fnResult;
 
-    if (this.waitList.length > 0 && this.runningIndex <= this.cacheList.length - 1) {
-      const nextFn = this.waitList.shift() as SignWaitRecord;
-      this.runningList.push(nextFn);
-      this.operationalFn(nextFn);
-    }
+      this.runningIndex++;
 
-    if (this.waitList.length === 0 && this.runningList.length === 0) {
-      this.status = 'finish';
-      this.runningIndex = 0;
-      this.runOnEvent('finish', this.resultList);
+      // 当前任务执行完毕，从runningList中删除
+      this.runningList.splice(
+        this.runningList.findIndex((item) => item._id === record._id),
+        1
+      );
+
+      if (this.allowStart.includes(this.status) || record._remove) {
+        return;
+      }
+
+      if (this.waitList.length > 0) {
+        const nextFn = this.waitList.shift() as SignWaitRecord;
+        this.runningList.push(nextFn);
+        this.operationalFn(nextFn);
+      }
+
+      if (this.runningIndex === this.cacheList.length) {
+        this.finishEvent();
+      }
     }
   }
 
   private async traverseRunningList() {
     // 循环去遍历 runningList
     for (let i = 0; i < this.maxConcurrency; i++) {
+      if (this.allowStart.includes(this.status)) {
+        break;
+      }
+
       const record = this.runningList[i];
+
+      if (!record) {
+        break;
+      }
 
       // 如果是 undefined 抛出错误
       if (this.runningIndex < this.cacheList.length) {
         if (isNullOrUndefined(record.fn)) {
-          console.log(await record.fn);
-          this.runOnEvent(
-            'error',
-            new Error(`${record.fn.toString()} is undefined, the subscript is ${this.runningIndex}`)
+          const error = new Error(
+            `${record.fn} is undefined, the subscript is ${this.runningIndex}`
           );
+          throw error;
         }
 
-        const error = this.operationalFn(record);
-
-        if (error) throw error;
+        this.operationalFn(record);
       }
     }
   }
@@ -315,19 +308,25 @@ class Queue {
       }
     }
   }
+
+  finishEvent() {
+    this.status = 'finish';
+    this.runningIndex = 0;
+    this.waitList = [];
+    this.cacheList = [];
+    this.runOnEvent('finish', this.resultList);
+  }
 }
 
-export default Queue;
+// export default Queue;
 const a = [];
-const aaa = (b: string) => {
+const test1 = () => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(b);
-    }, 1000);
+      resolve('aaa');
+    }, 3000);
   });
 };
-a.push(aaa('aaaaaaaaa'));
-// a.push(aaa.bind(null, 'aaaaaaaaa'));
 
 const jsAsyncTemp = () => {
   return new Promise((resolve) => {
@@ -336,9 +335,11 @@ const jsAsyncTemp = () => {
     }, 1000);
   });
 };
+
 const jsSyncTemp = () => {
   return '{{code}}';
 };
+
 for (let i = 0; i < 10; i++) {
   const sc = String.fromCharCode(65 + i);
 
@@ -349,17 +350,29 @@ for (let i = 0; i < 10; i++) {
   a.push(eval(`(${s})`));
 }
 
+a.splice(4, 0, async () => {
+  return new Error('error');
+});
+
 const queue = new Queue(a, {
-  maxConcurrency: 1
+  maxConcurrency: 3,
+  retryCount: 3
 });
 
 let start_time = 0;
 let end_time = 0;
+
 queue.on('start', () => {
   start_time = performance.now();
 });
-queue.on('finish', (e) => {
-  console.log('finish===', e);
+
+// queue.on('success', (e) => {
+//   end_time = performance.now();
+//   console.log('success:' + e + '-' + (end_time - start_time) / 1000 + '');
+// });
+
+queue.on('finish', async (e) => {
+  console.log('finish===', await e);
   end_time = performance.now();
   console.log('耗时：' + (end_time - start_time) + '微秒。');
 });

@@ -54,7 +54,8 @@ export const sleep = (time = 0) => {
   return new Promise<void>((resolve) => setTimeout(() => resolve(), time));
 };
 
-type AccessType =
+export type AccessType =
+  | 'Window'
   | 'String'
   | 'Object'
   | 'Number'
@@ -63,10 +64,12 @@ type AccessType =
   | 'Undefined'
   | 'Null'
   | 'Function'
+  | 'AsyncFunction'
   | 'Date'
   | 'Array'
   | 'RegExp'
   | 'Error'
+  | 'Promise'
   | 'HTMLDocument'
   | 'global';
 
@@ -74,6 +77,6 @@ type AccessType =
  * 类型获取
  * @param access 参数
  */
-export const getAccessType = (access: any): AccessType => {
+export const getAccessType = (access: any) => {
   return Object.prototype.toString.call(access).slice(8, -1) as AccessType;
 };

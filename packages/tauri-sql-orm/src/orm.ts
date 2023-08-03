@@ -5,6 +5,22 @@ import type { DatabaseType, ModelAttributes, ModelDefineOptions } from './type';
 
 export type DatabasePath = `${'sqlite' | 'mysql' | 'postgres'}:${string}`;
 
+/**
+ * #### SQL ORM
+ *
+ * The path is relative to `tauri::api::path::BaseDirectory::App`
+ *
+ * and must start with `sqlite:` or `mysql:` or `postgres:`
+ *
+ * @class SqlORM
+ * @example
+ *
+ * ``` ts
+ * const sqlite = new SqlORM('sqlite:test.db');
+ * const mysql = new SqlORM('mysql://root:root@localhost/database');
+ * const postgres = new SqlORM('postgres://postgres:root@localhost:5432/postgres');
+ * ```
+ */
 export default class SqlORM {
   /** database instance */
   private db: Promise<SqlDatabase> | null = null;
@@ -14,22 +30,6 @@ export default class SqlORM {
 
   private databaseType: DatabaseType;
 
-  /**
-   * #### SQL ORM
-   *
-   * The path is relative to `tauri::api::path::BaseDirectory::App`
-   *
-   * and must start with `sqlite:` or `mysql:` or `postgres:`
-   *
-   * @class SqlORM
-   * @example
-   *
-   * ``` ts
-   * const sqlite = new SqlORM('sqlite:test.db');
-   * const mysql = new SqlORM('mysql://root:root@localhost/database');
-   * const postgres = new SqlORM('postgres://postgres:root@localhost:5432/postgres');
-   * ```
-   */
   constructor(path: DatabasePath) {
     this.path = path;
     this.databaseType = path.split(':')[0] as 'sqlite' | 'mysql' | 'postgres';

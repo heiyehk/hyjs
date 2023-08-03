@@ -26,7 +26,7 @@ export const dateFormatter = (formatter: string, date?: string | Date) => {
   const m = dateAfter.getMinutes();
   const s = dateAfter.getSeconds();
 
-  const formatNumber = (n: number) => String((n < 10 ? '0' + n : n));
+  const formatNumber = (n: number) => String(n < 10 ? '0' + n : n);
 
   const matches: Record<HyjsDateFormatterType | string, number> = {
     YYYY: Y,
@@ -36,7 +36,7 @@ export const dateFormatter = (formatter: string, date?: string | Date) => {
     HH: H,
     hh: H % 12 || 12,
     mm: m,
-    ss: s,
+    ss: s
   };
 
   return formatter.replace(/YYYY|YY|MM|DD|HH|hh|mm|ss/g, (match) => {
