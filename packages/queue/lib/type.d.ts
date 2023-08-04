@@ -30,4 +30,4 @@ export declare type QueueOptions = {
     retryCount: number;
 };
 export declare type QueueParams = Partial<QueueOptions> | WaitFunction[];
-export declare type QueueEvent = 'success' | 'start' | 'stop' | 'pause' | 'resume' | 'running' | 'add' | 'remove' | 'finish' | 'clear' | 'error' | 'timeout';
+export declare type QueueEvent = 'success' | 'start' | 'stop' | 'pause' | 'resume' | 'running' | 'finish' | 'error';

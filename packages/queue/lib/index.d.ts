@@ -1,15 +1,16 @@
 import type { QueueEvent, QueueOptions, QueueParams, WaitFn } from './type';
 /**
- * 队列
- * @param waitList 等待队列
- * @param maxConcurrency 最大并发数
- * @param retryCount 错误重试次数
- * @returns
+ * Queue
+ * @param waitList witeList
+ * @param maxConcurrency max concurrency, default 6
+ * @param retryCount error retry count, default 0
+ *
  * @example
  * ``` ts
  * const queue = new Queue({
  *   waitList: [fn1, fn2, fn3],
  *   maxConcurrency: 1,
+ *   retryCount: 3
  * });
  * ```
  */
@@ -28,26 +29,38 @@ declare class Queue {
     constructor(params: QueueParams, options?: Partial<Omit<QueueOptions, 'waitList'>>);
     private fillAttribute;
     private init;
+    /**
+     * listener event
+     * Will be called when the event is triggered, and the event will be passed into the parameter list of the listener
+     * @param event event name `success` | `start` | `stop` | `pause` | `resume` | `running` | `finish` | `error`
+     * @param listener
+     */
     on(event: QueueEvent, listener: (...args: any[]) => void): void;
+    /**
+     * start execution queue
+     */
     start(): void;
     /**
-     * 停止队列
-     * @param finish 是否执行finish事件
+     * stop queue
+     * @param finish Whether to execute the finish event
      */
     stop(finish?: boolean): void;
     /**
-     * 暂停队列
+     * pause queue
      */
     pause(): void;
     /**
-     * 恢复队列
+     * resume queue
      */
     resume(): Promise<void>;
     add(fn: WaitFn | Promise<WaitFn>): void;
     add(fn: WaitFn | Promise<WaitFn>, index?: number): void;
     /**
-     * 删除队列中的某个任务
-     * @param fn 如果是函数，会根据函数的toString方法来判断是否是同一个函数，否则自动删除waitList中的最后一个任务
+     * Delete a task from the queue
+     * @param fn If it is a function,
+     * it will judge whether it is the same function according to the toString method of the function,
+     * otherwise,
+     * the last task in the waitList will be automatically deleted
      * @returns
      */
     remove(fn?: WaitFn | Promise<WaitFn>): void;

@@ -2,16 +2,17 @@ import type { QueueEvent, QueueOptions, QueueParams, SignWaitRecord, WaitFn } fr
 import { getAccessType, isError, isNullOrUndefined } from './utils';
 
 /**
- * 队列
- * @param waitList 等待队列
- * @param maxConcurrency 最大并发数
- * @param retryCount 错误重试次数
- * @returns
+ * Queue
+ * @param waitList witeList
+ * @param maxConcurrency max concurrency, default 6
+ * @param retryCount error retry count, default 0
+ *
  * @example
  * ``` ts
  * const queue = new Queue({
  *   waitList: [fn1, fn2, fn3],
  *   maxConcurrency: 1,
+ *   retryCount: 3
  * });
  * ```
  */
@@ -28,7 +29,7 @@ class Queue {
 
   private events: Record<QueueEvent, ((...args: any[]) => void)[]> = {} as any;
 
-  private allowStart = ['stop', 'pause', 'error', 'timeout'];
+  private allowStart = ['stop', 'pause', 'error'];
   private notAllowStart = ['start', 'running'];
 
   constructor(params: QueueParams, options?: Partial<Omit<QueueOptions, 'waitList'>>) {
@@ -58,6 +59,12 @@ class Queue {
     this.retryCount = params.retryCount || this.retryCount;
   }
 
+  /**
+   * listener event
+   * Will be called when the event is triggered, and the event will be passed into the parameter list of the listener
+   * @param event event name `success` | `start` | `stop` | `pause` | `resume` | `running` | `finish` | `error`
+   * @param listener
+   */
   on(event: QueueEvent, listener: (...args: any[]) => void) {
     if (!this.events[event]) {
       this.events[event] = [];
@@ -66,39 +73,45 @@ class Queue {
     this.events[event].push(listener);
   }
 
+  /**
+   * start execution queue
+   */
   start() {
     if (this.notAllowStart.includes(this.status)) {
-      throw new Error(`当前状态为${this.status}，不允许执行start`);
+      throw new Error(`The current status is ${this.status}, start is not allowed`);
     }
 
     this.status = 'start';
-    this.runOnEvent('start');
+    this.runOnEvent(this.status);
     this.run();
   }
 
   /**
-   * 停止队列
-   * @param finish 是否执行finish事件
+   * stop queue
+   * @param finish Whether to execute the finish event
    */
   stop(finish = false) {
     this.status = 'stop';
+    this.runOnEvent(this.status);
     if (finish) {
       this.finishEvent();
     }
   }
 
   /**
-   * 暂停队列
+   * pause queue
    */
   pause() {
     this.status = 'pause';
+    this.runOnEvent(this.status);
   }
 
   /**
-   * 恢复队列
+   * resume queue
    */
   async resume() {
     this.status = 'resume';
+    this.runOnEvent(this.status);
     this.traverseRunningList();
   }
 
@@ -124,8 +137,11 @@ class Queue {
   }
 
   /**
-   * 删除队列中的某个任务
-   * @param fn 如果是函数，会根据函数的toString方法来判断是否是同一个函数，否则自动删除waitList中的最后一个任务
+   * Delete a task from the queue
+   * @param fn If it is a function,
+   * it will judge whether it is the same function according to the toString method of the function,
+   * otherwise,
+   * the last task in the waitList will be automatically deleted
    * @returns
    */
   remove(fn?: WaitFn | Promise<WaitFn>) {
@@ -159,7 +175,7 @@ class Queue {
 
     this.status = 'running';
 
-    this.runOnEvent('running');
+    this.runOnEvent(this.status);
     this.traverseRunningList();
   }
 
@@ -174,12 +190,13 @@ class Queue {
 
     const fnResult = await record.fn();
 
-    // 错误重试
+    // error retry
     if (
       isError(fnResult) &&
       this.retryCount &&
       (!record._retryCount || record._retryCount < this.retryCount)
     ) {
+      this.runOnEvent('error', fnResult, record._id);
       record._retryCount = record._retryCount ? record._retryCount + 1 : 1;
       this.operationalFn(record);
     } else {
@@ -187,12 +204,13 @@ class Queue {
         this.runOnEvent('success', fnResult, record._id);
       }
 
-      // 当前任务执行完毕，将结果存入结果集，即使任务被删除，也要存 空 进入结果集
+      // After the current task is executed, the result will be stored in the result set.
+      // Even if the task is deleted, it must be saved. Enter the result set
       this.resultList[record._id] = fnResult;
 
       this.runningIndex++;
 
-      // 当前任务执行完毕，从runningList中删除
+      // After the current task is executed, delete it from the runningList
       this.runningList.splice(
         this.runningList.findIndex((item) => item._id === record._id),
         1
@@ -215,7 +233,6 @@ class Queue {
   }
 
   private async traverseRunningList() {
-    // 循环去遍历 runningList
     for (let i = 0; i < this.maxConcurrency; i++) {
       if (this.allowStart.includes(this.status)) {
         break;
@@ -227,12 +244,13 @@ class Queue {
         break;
       }
 
-      // 如果是 undefined 抛出错误
+      // If it is undefined throw an error
       if (this.runningIndex < this.cacheList.length) {
         if (isNullOrUndefined(record.fn)) {
           const error = new Error(
             `${record.fn} is undefined, the subscript is ${this.runningIndex}`
           );
+          this.runOnEvent('error', error, record._id);
           throw error;
         }
 

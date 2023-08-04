@@ -40,9 +40,5 @@ export type QueueEvent =
   | 'pause'
   | 'resume'
   | 'running'
-  | 'add'
-  | 'remove'
   | 'finish'
-  | 'clear'
-  | 'error'
-  | 'timeout';
+  | 'error';
