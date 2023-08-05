@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import SqlDatabase from 'tauri-plugin-sql-api';
 
 import {
@@ -203,6 +202,7 @@ export default class Model {
     const filteredKeys = keys.filter((item) => !this._getRawAttributes[item].autoIncrement);
     const values = data
       .map((record) => {
+        const createValue = [];
         for (const key of Object.keys(this._getRawAttributes)) {
           // add check for autoIncrement
           if (record[key] === undefined) {
@@ -211,15 +211,21 @@ export default class Model {
             // if defaultValue not undefined, set default value
             // deletedAt will set to null
             if (this._getRawAttributes[key].defaultValue !== undefined) {
+              createValue.push(this._getRawAttributes[key].defaultValue);
               record[key] = this._getRawAttributes[key].defaultValue;
             } else if (this._getRawAttributes[key].allowNull === false) {
               // if allowNull is false, throw error
               throw new Error(`Column ${key} is not allow null.`);
+            } else {
+              createValue.push(null);
+              record[key] = null;
             }
+          } else {
+            createValue.push(record[key]);
           }
         }
 
-        return Object.values(record);
+        return createValue;
       })
       .flat();
 

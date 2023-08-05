@@ -59,6 +59,27 @@ export default class SqlORM {
         readonly _getRawAttributes: Record<string, any>;
         readonly _getRawOptions: import("./type").ModelOptions;
         readonly _getTimezoneDate: string;
+        /**
+         * #### Define a model
+         * @param modelName
+         * @param attributes
+         * @param options
+         * @example
+         * ``` ts
+         * const Test = test.define('test', {
+         *   id: {
+         *     type: DataTypes.INTEGER,
+         *     primaryKey: true,
+         *     autoIncrement: true
+         *   },
+         *   name: {
+         *     type: DataTypes.TEXT,
+         *     allowNull: false
+         *   }
+         * });
+         * ```
+         * @returns
+         */
         _init(modelName: string, attributes: ModelAttributes, options: ModelDefineOptions): typeof Model;
         _setRawOptions(options: ModelDefineOptions): Promise<void>;
         _setTimestampsAttributes(attributes: ModelAttributes): Promise<void>;

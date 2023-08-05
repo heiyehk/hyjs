@@ -362,6 +362,7 @@ var Model = /** @class */ (function () {
                         values = data
                             .map(function (record) {
                             var e_2, _a;
+                            var createValue = [];
                             try {
                                 for (var _b = __values(Object.keys(_this._getRawAttributes)), _c = _b.next(); !_c.done; _c = _b.next()) {
                                     var key = _c.value;
@@ -373,12 +374,20 @@ var Model = /** @class */ (function () {
                                         // if defaultValue not undefined, set default value
                                         // deletedAt will set to null
                                         if (_this._getRawAttributes[key].defaultValue !== undefined) {
+                                            createValue.push(_this._getRawAttributes[key].defaultValue);
                                             record[key] = _this._getRawAttributes[key].defaultValue;
                                         }
                                         else if (_this._getRawAttributes[key].allowNull === false) {
                                             // if allowNull is false, throw error
                                             throw new Error("Column ".concat(key, " is not allow null."));
                                         }
+                                        else {
+                                            createValue.push(null);
+                                            record[key] = null;
+                                        }
+                                    }
+                                    else {
+                                        createValue.push(record[key]);
                                     }
                                 }
                             }
@@ -389,7 +398,7 @@ var Model = /** @class */ (function () {
                                 }
                                 finally { if (e_2) throw e_2.error; }
                             }
-                            return Object.values(record);
+                            return createValue;
                         })
                             .flat();
                         placeholders = Array(filteredKeys.length).fill('?').join(', ');
