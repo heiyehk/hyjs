@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.4](https://github.com/heiyehk/hyjs/compare/@hyjs/tauri-sql-orm@0.1.3...@hyjs/tauri-sql-orm@0.1.4) (2023-08-05)
+
+### Bug Fixes
+
+- tauri-sql-orm fixes creating unnecessary parameters when creating ([3fd9932](https://github.com/heiyehk/hyjs/commit/3fd9932c3318f3e190c24a4ccd0a54092cec9533))
+
 ## [0.1.3](https://github.com/heiyehk/hyjs/compare/@hyjs/tauri-sql-orm@0.1.2...@hyjs/tauri-sql-orm@0.1.3) (2023-08-03)
 
 **Note:** Version bump only for package @hyjs/tauri-sql-orm
