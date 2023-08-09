@@ -4,7 +4,7 @@ Sure! Here's a brief English description for your JavaScript library "@hyjs/queu
 
 "@hyjs/queue" is a powerful JavaScript library designed to manage function queues effectively. This library operates as a class, allowing users to control the maximum concurrency of queues and enabling error retries. With comprehensive event listeners, developers can monitor and respond to various stages of the queue, such as 'success', 'start', 'stop', 'pause', 'resume', 'running', 'finish', and 'error'. It provides a flexible and efficient solution for handling complex asynchronous tasks and optimizing performance in JavaScript applications.
 
-## Usage
+## Use
 
 ``` ts
 import Queue from '@hyjs/queue';

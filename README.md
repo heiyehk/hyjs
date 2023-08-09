@@ -14,7 +14,7 @@ Use: ```npm i @hyjs/queue```
 
 ### [@hyjs/tauri-sql-orm](https://github.com/heiyehk/hyjs/tree/main/packages/tauri-sql-orm)
 在tauri中使用封装好sql的orm  
-Use the orm packaged sql in tauri
+Use the orm packaged sql in tauri  
 Guide: [tauri-sql-orm](/packages/tauri-sql-orm/README.md)  
 Use: ```npm i @hyjs/tauri-sql-orm```
 

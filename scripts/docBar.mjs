@@ -8,13 +8,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const packages = packagesPath();
-let barTemplate = '* [Home](/)';
+let barTemplate = `* [Home](/)
+
+* @hyjs`;
 
 packages.packagesName.forEach((item) => {
-  barTemplate += `\n* [${item}](/packages/${item}/README.md)`;
+  barTemplate += `\n  * [${item}](/packages/${item}/README.md)`;
 });
 
-writeFile(join(__dirname, '../_sidebar.md'), barTemplate, 'utf8', (err) => {
+writeFile(join(__dirname, '../_navbar.md'), barTemplate, 'utf8', (err) => {
   if (err) throw err;
-  console.log('[update _sidebar]: update _sidebar successful!');
+  console.log('[update _navbar]: update _navbar successful!');
 });
