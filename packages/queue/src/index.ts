@@ -22,6 +22,7 @@ class Queue {
   private retryCount = 0;
 
   public status: QueueEvent = 'stop';
+
   private cacheList: SignWaitRecord[] = [];
   private runningList: SignWaitRecord[] = [];
   private resultList: any[] = [];
@@ -67,10 +68,10 @@ class Queue {
    */
   on(event: QueueEvent, listener: (...args: any[]) => void) {
     if (!this.events[event]) {
-      this.events[event] = [];
+      this.events[event] = [listener];
+    } else {
+      this.events[event].push(listener);
     }
-
-    this.events[event].push(listener);
   }
 
   /**
@@ -89,8 +90,9 @@ class Queue {
   /**
    * stop queue
    * @param finish Whether to execute the finish event
+   * @default false
    */
-  stop(finish = false) {
+  async stop(finish = false) {
     this.status = 'stop';
     this.runOnEvent(this.status);
     if (finish) {
@@ -109,7 +111,7 @@ class Queue {
   /**
    * resume queue
    */
-  async resume() {
+  resume() {
     this.status = 'resume';
     this.runOnEvent(this.status);
     this.traverseRunningList();
@@ -168,14 +170,12 @@ class Queue {
     this.runningIndex = 0;
   }
 
-  private async run() {
+  private run() {
     if (this.allowStart.includes(this.status)) {
       return;
     }
-
     this.status = 'running';
 
-    this.runOnEvent(this.status);
     this.traverseRunningList();
   }
 
@@ -190,6 +190,8 @@ class Queue {
 
     const fnResult = await record.fn();
 
+    this.runOnEvent('running', record._id);
+
     // error retry
     if (
       isError(fnResult) &&
@@ -200,7 +202,7 @@ class Queue {
       record._retryCount = record._retryCount ? record._retryCount + 1 : 1;
       this.operationalFn(record);
     } else {
-      if (this.status === 'running' && !record._remove) {
+      if (!record._remove) {
         this.runOnEvent('success', fnResult, record._id);
       }
 
@@ -216,7 +218,7 @@ class Queue {
         1
       );
 
-      if (this.allowStart.includes(this.status) || record._remove) {
+      if (record._remove) {
         return;
       }
 
@@ -232,7 +234,7 @@ class Queue {
     }
   }
 
-  private async traverseRunningList() {
+  private traverseRunningList() {
     for (let i = 0; i < this.maxConcurrency; i++) {
       if (this.allowStart.includes(this.status)) {
         break;
