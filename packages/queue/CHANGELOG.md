@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.2](https://github.com/heiyehk/hyjs/compare/@hyjs/queue@0.2.0...@hyjs/queue@0.1.2) (2023-08-29)
+
+**Note:** Version bump only for package @hyjs/queue
+
 # [0.2.0](https://github.com/heiyehk/hyjs/compare/@hyjs/queue@0.1.1...@hyjs/queue@0.2.0) (2023-08-29)
 
 ### Features
