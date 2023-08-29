@@ -8,7 +8,8 @@ import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
 // import { babel } from '@rollup/plugin-babel';
 
-const packages = fs.readdirSync(path.resolve(__dirname, 'packages'));
+const ignorePackage = ['recommended']
+const packages = fs.readdirSync(path.resolve(__dirname, 'packages')).filter(key => !ignorePackage.includes(key));
 const production = !process.env.ROLLUP_WATCH;
 const umd = process.env.UMD;
 
