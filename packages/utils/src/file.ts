@@ -120,3 +120,17 @@ export const getAudioDuration = (file: File): Promise<number> => {
     });
   });
 };
+
+/**
+ * 文件转buffer
+ * @param file
+ * @returns
+ */
+export const fileToBuffer = async (file: File | Blob): Promise<ArrayBuffer> => {
+  return new Promise(resolve => {
+    const fr = new FileReader();
+
+    fr.readAsArrayBuffer(file);
+    fr.onloadend = () => resolve(fr.result as ArrayBuffer);
+  });
+};
