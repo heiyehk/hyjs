@@ -1,6 +1,6 @@
 {
   "name": "@hyjs/mirror-sandbox",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "todo",
   "author": "heiyehk <heiyehk@foxmail.com>",
   "homepage": "https://github.com/heiyehk/hyjs#readme",
@@ -35,6 +35,6 @@
   "gitHead": "6183ec5769fe09562acc49414d935d36ca94e4ab",
   "globalName": "__MirrorSandbox__",
   "dependencies": {
-    "@hyjs/utils": "^0.3.3"
+    "@hyjs/utils": "^0.4.0"
   }
 }

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/heiyehk/hyjs/compare/@hyjs/utils@0.3.3...@hyjs/utils@0.4.0) (2023-08-29)
+
+### Features
+
+- build ([db18974](https://github.com/heiyehk/hyjs/commit/db18974529d0583051306a5cd95a1c6f4a41b187))
+
 ## [0.3.3](https://github.com/heiyehk/hyjs/compare/@hyjs/utils@0.3.2...@hyjs/utils@0.3.3) (2023-08-03)
 
 **Note:** Version bump only for package @hyjs/utils
