@@ -1,6 +1,6 @@
 {
   "name": "@hyjs/recommended",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "eslint plugin recommended",
   "author": "heiyehk <heiyehk@foxmail.com>",
   "homepage": "https://github.com/heiyehk/hyjs#readme",
