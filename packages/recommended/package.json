@@ -5,9 +5,8 @@
   "author": "heiyehk <heiyehk@foxmail.com>",
   "homepage": "https://github.com/heiyehk/hyjs#readme",
   "license": "ISC",
-  "main": "dist/index.cjs.js",
+  "main": "dist/index.js",
   "directories": {
-    "lib": "lib",
     "test": "__tests__"
   },
   "files": [
@@ -19,21 +18,15 @@
     "url": "git+https://github.com/heiyehk/hyjs.git"
   },
   "scripts": {
-    "build": "tsc -b",
     "test": "jest"
   },
   "bugs": {
     "url": "https://github.com/heiyehk/hyjs/issues"
   },
-  "module": "dist/index.esm.js",
-  "unpkg": "dist/index.min.js",
-  "jsdelivr": "dist/index.min.js",
-  "types": "lib/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
   "gitHead": "6183ec5769fe09562acc49414d935d36ca94e4ab",
-  "globalName": "__recommended__",
   "eslintConfig": {
     "extends": "plugin:@hyjs/recommended"
   },

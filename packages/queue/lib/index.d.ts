@@ -43,8 +43,9 @@ declare class Queue {
     /**
      * stop queue
      * @param finish Whether to execute the finish event
+     * @default false
      */
-    stop(finish?: boolean): void;
+    stop(finish?: boolean): Promise<void>;
     /**
      * pause queue
      */
@@ -52,7 +53,7 @@ declare class Queue {
     /**
      * resume queue
      */
-    resume(): Promise<void>;
+    resume(): void;
     add(fn: WaitFn | Promise<WaitFn>): void;
     add(fn: WaitFn | Promise<WaitFn>, index?: number): void;
     /**

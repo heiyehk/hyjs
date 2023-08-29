@@ -158,3 +158,17 @@ export var getAudioDuration = function (file) {
         });
     });
 };
+/**
+ * 文件转buffer
+ * @param file
+ * @returns
+ */
+export var fileToBuffer = function (file) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        return [2 /*return*/, new Promise(function (resolve) {
+                var fr = new FileReader();
+                fr.readAsArrayBuffer(file);
+                fr.onloadend = function () { return resolve(fr.result); };
+            })];
+    });
+}); };

@@ -141,9 +141,11 @@ var Queue = /** @class */ (function () {
      */
     Queue.prototype.on = function (event, listener) {
         if (!this.events[event]) {
-            this.events[event] = [];
+            this.events[event] = [listener];
         }
-        this.events[event].push(listener);
+        else {
+            this.events[event].push(listener);
+        }
     };
     /**
      * start execution queue
@@ -159,14 +161,20 @@ var Queue = /** @class */ (function () {
     /**
      * stop queue
      * @param finish Whether to execute the finish event
+     * @default false
      */
     Queue.prototype.stop = function (finish) {
         if (finish === void 0) { finish = false; }
-        this.status = 'stop';
-        this.runOnEvent(this.status);
-        if (finish) {
-            this.finishEvent();
-        }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                this.status = 'stop';
+                this.runOnEvent(this.status);
+                if (finish) {
+                    this.finishEvent();
+                }
+                return [2 /*return*/];
+            });
+        });
     };
     /**
      * pause queue
@@ -179,14 +187,9 @@ var Queue = /** @class */ (function () {
      * resume queue
      */
     Queue.prototype.resume = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                this.status = 'resume';
-                this.runOnEvent(this.status);
-                this.traverseRunningList();
-                return [2 /*return*/];
-            });
-        });
+        this.status = 'resume';
+        this.runOnEvent(this.status);
+        this.traverseRunningList();
     };
     Queue.prototype.add = function (fn, index) {
         if (index !== undefined) {
@@ -236,17 +239,11 @@ var Queue = /** @class */ (function () {
         this.runningIndex = 0;
     };
     Queue.prototype.run = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (this.allowStart.includes(this.status)) {
-                    return [2 /*return*/];
-                }
-                this.status = 'running';
-                this.runOnEvent(this.status);
-                this.traverseRunningList();
-                return [2 /*return*/];
-            });
-        });
+        if (this.allowStart.includes(this.status)) {
+            return;
+        }
+        this.status = 'running';
+        this.traverseRunningList();
     };
     Queue.prototype.operationalFn = function (record) {
         return __awaiter(this, void 0, void 0, function () {
@@ -263,6 +260,7 @@ var Queue = /** @class */ (function () {
                         return [4 /*yield*/, record.fn()];
                     case 1:
                         fnResult = _a.sent();
+                        this.runOnEvent('running', record._id);
                         // error retry
                         if (isError(fnResult) &&
                             this.retryCount &&
@@ -272,7 +270,7 @@ var Queue = /** @class */ (function () {
                             this.operationalFn(record);
                         }
                         else {
-                            if (this.status === 'running' && !record._remove) {
+                            if (!record._remove) {
                                 this.runOnEvent('success', fnResult, record._id);
                             }
                             // After the current task is executed, the result will be stored in the result set.
@@ -281,7 +279,7 @@ var Queue = /** @class */ (function () {
                             this.runningIndex++;
                             // After the current task is executed, delete it from the runningList
                             this.runningList.splice(this.runningList.findIndex(function (item) { return item._id === record._id; }), 1);
-                            if (this.allowStart.includes(this.status) || record._remove) {
+                            if (record._remove) {
                                 return [2 /*return*/];
                             }
                             if (this.waitList.length > 0) {
@@ -299,30 +297,24 @@ var Queue = /** @class */ (function () {
         });
     };
     Queue.prototype.traverseRunningList = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var i, record, error;
-            return __generator(this, function (_a) {
-                for (i = 0; i < this.maxConcurrency; i++) {
-                    if (this.allowStart.includes(this.status)) {
-                        break;
-                    }
-                    record = this.runningList[i];
-                    if (!record) {
-                        break;
-                    }
-                    // If it is undefined throw an error
-                    if (this.runningIndex < this.cacheList.length) {
-                        if (isNullOrUndefined(record.fn)) {
-                            error = new Error("".concat(record.fn, " is undefined, the subscript is ").concat(this.runningIndex));
-                            this.runOnEvent('error', error, record._id);
-                            throw error;
-                        }
-                        this.operationalFn(record);
-                    }
+        for (var i = 0; i < this.maxConcurrency; i++) {
+            if (this.allowStart.includes(this.status)) {
+                break;
+            }
+            var record = this.runningList[i];
+            if (!record) {
+                break;
+            }
+            // If it is undefined throw an error
+            if (this.runningIndex < this.cacheList.length) {
+                if (isNullOrUndefined(record.fn)) {
+                    var error = new Error("".concat(record.fn, " is undefined, the subscript is ").concat(this.runningIndex));
+                    this.runOnEvent('error', error, record._id);
+                    throw error;
                 }
-                return [2 /*return*/];
-            });
-        });
+                this.operationalFn(record);
+            }
+        }
     };
     Queue.prototype.runOnEvent = function (event) {
         var _a;

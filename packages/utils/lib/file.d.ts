@@ -43,3 +43,9 @@ export declare const compressImage: (file: File, quality?: number) => Promise<Bl
  * @returns 秒/s
  */
 export declare const getAudioDuration: (file: File) => Promise<number>;
+/**
+ * 文件转buffer
+ * @param file
+ * @returns
+ */
+export declare const fileToBuffer: (file: File | Blob) => Promise<ArrayBuffer>;
