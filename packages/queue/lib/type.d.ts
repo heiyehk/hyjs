@@ -1,6 +1,6 @@
-export declare type WaitFn = (...args: any[]) => void;
-export declare type WaitFunction = WaitFn | Promise<WaitFn>;
-export declare type SignWaitRecord = {
+export type WaitFn = (...args: any[]) => void;
+export type WaitFunction = WaitFn | Promise<WaitFn>;
+export type SignWaitRecord = {
     _id: number;
     _remove?: boolean;
     /** 错误重试次数 */
@@ -21,7 +21,7 @@ export declare type SignWaitRecord = {
  * });
  * ```
  */
-export declare type QueueOptions = {
+export type QueueOptions = {
     /** 等待队列 */
     waitList: WaitFunction[];
     /** 最大并发数 */
@@ -29,5 +29,5 @@ export declare type QueueOptions = {
     /** 错误重试次数 */
     retryCount: number;
 };
-export declare type QueueParams = Partial<QueueOptions> | WaitFunction[];
-export declare type QueueEvent = 'success' | 'start' | 'stop' | 'pause' | 'resume' | 'running' | 'finish' | 'error';
+export type QueueParams = Partial<QueueOptions> | WaitFunction[];
+export type QueueEvent = 'success' | 'start' | 'stop' | 'pause' | 'resume' | 'running' | 'finish' | 'error';

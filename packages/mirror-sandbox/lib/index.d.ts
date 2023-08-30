@@ -1,11 +1,11 @@
-export declare type MirrorSandboxPlugin = (doc: Document) => void;
-declare type MirrorSandboxHeadAttr = {
+export type MirrorSandboxPlugin = (doc: Document) => void;
+type MirrorSandboxHeadAttr = {
     [key: string]: any;
     script?: (Partial<HTMLScriptElement> | string)[];
     style?: string | string[];
     link?: Partial<HTMLLinkElement>[];
 };
-declare type MirrorSandboxOptions = {
+type MirrorSandboxOptions = {
     iframe: Partial<SandboxHTMLIFrameElement>;
     head?: MirrorSandboxHeadAttr;
     plugins?: MirrorSandboxPlugin[];

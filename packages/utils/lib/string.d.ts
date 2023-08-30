@@ -15,7 +15,7 @@ export declare const toLine: (name: string) => string;
  * @returns
  */
 export declare const random4Code: () => string;
-declare type RandomChar = (len: number, char: ('number' | 'lowercase' | 'capital')[]) => string;
+type RandomChar = (len: number, char: ('number' | 'lowercase' | 'capital')[]) => string;
 /**
  * 生成指定长度的字符，可选择`number`(数字), `lowercase`(小写字母), `capital`(大写字母)
  * @param len

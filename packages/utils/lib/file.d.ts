@@ -17,7 +17,7 @@ export declare const fileToBase64: (file: File) => Promise<string>;
    // Promise<Blob>
     ```
  */
-export declare const convertBase64ToFile: (base64: string, type?: "file" | undefined, filename?: string | undefined) => Blob;
+export declare const convertBase64ToFile: (base64: string, type?: 'file', filename?: string) => Blob;
 /**
  * 流文件下载
  * @param data 流

@@ -1,12 +1,19 @@
-import fs from 'fs-extra';
-import path from 'path';
-import commonjs from '@rollup/plugin-commonjs';
-import json from '@rollup/plugin-json';
-import { terser } from 'rollup-plugin-terser';
-import replace from '@rollup/plugin-replace';
-import svelte from 'rollup-plugin-svelte';
-import resolve from '@rollup/plugin-node-resolve';
-// import { babel } from '@rollup/plugin-babel';
+// import fs from 'fs-extra';
+const fs = require('fs-extra');
+// import path from 'path';
+const path = require('path');
+// import commonjs from '@rollup/plugin-commonjs';
+const commonjs = require('@rollup/plugin-commonjs');
+// import json from '@rollup/plugin-json';
+const json = require('@rollup/plugin-json');
+// import { terser } from 'rollup-plugin-terser';
+const { terser } = require('rollup-plugin-terser');
+// import replace from '@rollup/plugin-replace';
+const replace = require('@rollup/plugin-replace');
+// import svelte from 'rollup-plugin-svelte';
+const svelte = require('rollup-plugin-svelte');
+// import resolve from '@rollup/plugin-node-resolve';
+const resolve = require('@rollup/plugin-node-resolve');
 
 const ignorePackage = ['recommended']
 const packages = fs.readdirSync(path.resolve(__dirname, 'packages')).filter(key => !ignorePackage.includes(key));
@@ -130,4 +137,5 @@ const configs = packages.map(key => {
   }
 }).flat();
 
-export default [...configs];
+// export default [...configs];
+module.exports = [...configs];

@@ -1,7 +1,7 @@
 import SqlDatabase from 'tauri-plugin-sql-api';
 import Model from './model';
 import type { DatabaseType, ModelAttributes, ModelDefineOptions } from './type';
-export declare type DatabasePath = `${'sqlite' | 'mysql' | 'postgres'}:${string}`;
+export type DatabasePath = `${'sqlite' | 'mysql' | 'postgres'}:${string}`;
 /**
  * #### SQL ORM
  *

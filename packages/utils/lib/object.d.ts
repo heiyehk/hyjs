@@ -20,4 +20,4 @@
     // { a: undefined }
     ```
  */
-export declare const filterObjectEmpty: <T extends Record<string, any>>(data: T, validation?: (number | "" | null | undefined)[] | undefined) => T;
+export declare const filterObjectEmpty: <T extends Record<string, any>>(data: T, validation?: (null | undefined | '' | number)[]) => T;

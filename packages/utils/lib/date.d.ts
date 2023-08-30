@@ -11,4 +11,4 @@
     // 2022-01-13 12:00:00
     ```
  */
-export declare const dateFormatter: (formatter: string, date?: string | Date | undefined) => string;
+export declare const dateFormatter: (formatter: string, date?: string | Date) => string;

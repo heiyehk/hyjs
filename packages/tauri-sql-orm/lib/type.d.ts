@@ -1,6 +1,6 @@
 import SqlDatabase from 'tauri-plugin-sql-api';
 import { DataTypes } from './data-types';
-export declare type DatabaseType = 'sqlite' | 'mysql' | 'postgres';
+export type DatabaseType = 'sqlite' | 'mysql' | 'postgres';
 export interface ModelAttributesProperties {
     /**
      * type of column in database table (sqlite, mysql, postgres)
@@ -130,4 +130,4 @@ export interface DestroyOptions extends FindOptionsWhere {
     /** if true, will force delete */
     force?: boolean;
 }
-export declare type RestoreOptions = FindOptionsWhere;
+export type RestoreOptions = FindOptionsWhere;
