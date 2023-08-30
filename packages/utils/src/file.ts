@@ -127,7 +127,7 @@ export const getAudioDuration = (file: File): Promise<number> => {
  * @returns
  */
 export const fileToBuffer = async (file: File | Blob): Promise<ArrayBuffer> => {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const fr = new FileReader();
 
     fr.readAsArrayBuffer(file);

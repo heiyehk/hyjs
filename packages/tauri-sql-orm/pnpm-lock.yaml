@@ -1,0 +1,25 @@
+lockfileVersion: '6.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+dependencies:
+  tauri-plugin-sql-api:
+    specifier: https://github.com/tauri-apps/tauri-plugin-sql.git
+    version: git@github.com+tauri-apps/tauri-plugin-sql/b8fd19dac907cc8c3d78681cd4803a326b8b861e
+
+packages:
+
+  /@tauri-apps/api@1.4.0:
+    resolution: {integrity: sha512-Jd6HPoTM1PZSFIzq7FB8VmMu3qSSyo/3lSwLpoapW+lQ41CL5Dow2KryLg+gyazA/58DRWI9vu/XpEeHK4uMdw==}
+    engines: {node: '>= 14.6.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
+    dev: false
+
+  git@github.com+tauri-apps/tauri-plugin-sql/b8fd19dac907cc8c3d78681cd4803a326b8b861e:
+    resolution: {commit: b8fd19dac907cc8c3d78681cd4803a326b8b861e, repo: git@github.com:tauri-apps/tauri-plugin-sql.git, type: git}
+    name: tauri-plugin-sql-api
+    version: 0.0.0
+    dependencies:
+      '@tauri-apps/api': 1.4.0
+    dev: false
