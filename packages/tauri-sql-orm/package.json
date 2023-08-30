@@ -1,6 +1,6 @@
 {
   "name": "@hyjs/tauri-sql-orm",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "tauri-plugin-sql-api's ORM encapsulation provides a convenient and versatile way for developers to interact with SQL databases in their Tauri applications.",
   "type": "module",
   "keywords": [
