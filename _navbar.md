@@ -1,7 +1,7 @@
 * [Home](/)
 
 * @hyjs
-  * [mirror-sandbox](/packages/mirror-sandbox/README.md)
-  * [queue](/packages/queue/README.md)
-  * [tauri-sql-orm](/packages/tauri-sql-orm/README.md)
-  * [utils](/packages/utils/README.md)
+  * [mirror-sandbox](/hyjs/packages/mirror-sandbox/README.md)
+  * [queue](/hyjs/packages/queue/README.md)
+  * [tauri-sql-orm](/hyjs/packages/tauri-sql-orm/README.md)
+  * [utils](/hyjs/packages/utils/README.md)

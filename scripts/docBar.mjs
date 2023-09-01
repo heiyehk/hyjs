@@ -13,7 +13,7 @@ let barTemplate = `* [Home](/)
 * @hyjs`;
 
 packages.packagesName.forEach((item) => {
-  barTemplate += `\n  * [${item}](/packages/${item}/README.md)`;
+  barTemplate += `\n  * [${item}](/hyjs/packages/${item}/README.md)`;
 });
 
 writeFile(join(__dirname, '../_navbar.md'), barTemplate, 'utf8', (err) => {
